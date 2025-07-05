@@ -4,7 +4,7 @@ import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { MapPin, Phone, MessageCircle } from 'lucide-react-native';
+import { MapPin, Phone, MessageCircle, ChevronDown } from 'lucide-react-native';
 import Colors from '../../constants/Colors';
 import { Stack } from 'expo-router';
 
@@ -38,6 +38,124 @@ const listings = [
       name: 'Sarah Johnson',
       phone: '+263 77 987 6543',
     },
+  },
+];
+
+const feedListings = [
+  {
+    id: 'f1',
+    title: 'Dairy Meal 18%',
+    type: 'Cattle Feed',
+    weight: '50kg',
+    price: '$28.00/bag',
+    location: 'Harare, Zimbabwe',
+    description: 'High-quality dairy meal with 18% protein content. Ideal for lactating cows to maintain milk production.',
+    image: 'https://images.pexels.com/photos/6589027/pexels-photo-6589027.jpeg',
+    seller: {
+      name: 'AgroFeeds Zimbabwe',
+      phone: '+263 77 444 5566',
+    },
+    available: 'In stock',
+    minimumOrder: '5 bags'
+  },
+  {
+    id: 'f2',
+    title: 'Poultry Starter Mash',
+    type: 'Poultry Feed',
+    weight: '25kg',
+    price: '$18.50/bag',
+    location: 'Bulawayo, Zimbabwe',
+    description: 'Complete starter feed for chicks from day-old to 4 weeks. Contains essential nutrients for healthy growth.',
+    image: 'https://images.pexels.com/photos/6589037/pexels-photo-6589037.jpeg',
+    seller: {
+      name: 'Poultry Plus',
+      phone: '+263 77 555 6677',
+    },
+    available: 'In stock',
+    minimumOrder: '10 bags'
+  },
+  {
+    id: 'f3',
+    title: 'Goat & Sheep Pellets',
+    type: 'Small Ruminant Feed',
+    weight: '40kg',
+    price: '$32.00/bag',
+    location: 'Mutare, Zimbabwe',
+    description: 'Nutritionally balanced pellets for goats and sheep. Promotes weight gain and good health.',
+    image: 'https://images.pexels.com/photos/6589042/pexels-photo-6589042.jpeg',
+    seller: {
+      name: 'Livestock Feeds Co.',
+      phone: '+263 77 666 7788',
+    },
+    available: 'Limited stock',
+    minimumOrder: '3 bags'
+  },
+  {
+    id: 'f4',
+    title: 'Pig Grower Pellets',
+    type: 'Swine Feed',
+    weight: '50kg',
+    price: '$35.00/bag',
+    location: 'Gweru, Zimbabwe',
+    description: 'Complete feed for growing pigs from 20kg to market weight. Promotes steady growth and feed efficiency.',
+    image: 'https://images.pexels.com/photos/6589049/pexels-photo-6589049.jpeg',
+    seller: {
+      name: 'ZimPig Feeds',
+      phone: '+263 77 777 8899',
+    },
+    available: 'In stock',
+    minimumOrder: '5 bags'
+  },
+];
+
+const milkListings = [
+  {
+    id: 'm1',
+    title: 'Fresh Cow Milk',
+    type: 'Raw',
+    volume: '5 liters',
+    price: '$3.50/liter',
+    location: 'Marondera, Zimbabwe',
+    description: 'Fresh, raw cow milk from grass-fed cattle. Collected daily. Minimum order: 5 liters.',
+    image: 'https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg',
+    seller: {
+      name: 'Green Pastures Dairy',
+      phone: '+263 77 111 2233',
+    },
+    available: 'Daily',
+    packaging: 'Plastic bottles'
+  },
+  {
+    id: 'm2',
+    title: 'Pasteurized Milk',
+    type: 'Pasteurized',
+    volume: '2 liters',
+    price: '$4.00/bottle',
+    location: 'Harare, Zimbabwe',
+    description: 'Freshly pasteurized milk, packed in 2L bottles. Available in supermarkets.',
+    image: 'https://images.pexels.com/photos/5946720/pexels-photo-5946720.jpeg',
+    seller: {
+      name: 'Harare Dairies',
+      phone: '+263 77 222 3344',
+    },
+    available: 'In stock',
+    packaging: 'Plastic bottles'
+  },
+  {
+    id: 'm3',
+    title: 'Organic Raw Milk',
+    type: 'Organic Raw',
+    volume: '10 liters',
+    price: '$5.00/liter',
+    location: 'Nyanga, Zimbabwe',
+    description: 'Certified organic raw milk from free-range cattle. No antibiotics or hormones.',
+    image: 'https://images.pexels.com/photos/5946743/pexels-photo-5946743.jpeg',
+    seller: {
+      name: 'Nyanga Organics',
+      phone: '+263 77 333 4455',
+    },
+    available: 'Tuesday & Friday',
+    packaging: 'Glass bottles'
   },
 ];
 
@@ -81,6 +199,149 @@ function MarketplaceContent() {
     setShowBuyDropdown(false);
     setShowSellDropdown(false);
   };
+
+  const renderFeedCard = (listing: typeof feedListings[0]) => (
+    <Card key={listing.id} style={styles.listingCard}>
+      <Image source={{ uri: listing.image }} style={styles.listingImage} />
+      <View style={styles.listingContent}>
+        <View style={styles.listingHeader}>
+          <View>
+            <Text variant="h5" weight="medium">
+              {listing.title}
+            </Text>
+            <Text variant="body2" color="primary.500" style={styles.price}>
+              {listing.price}
+              {listing.minimumOrder && (
+                <Text variant="caption" color="neutral.600">
+                  {' '}(Min. {listing.minimumOrder})
+                </Text>
+              )}
+            </Text>
+          </View>
+          <Button variant="primary" size="sm">
+            Contact
+          </Button>
+        </View>
+
+        <View style={styles.detailsGrid}>
+          <View style={styles.detailItem}>
+            <Text variant="caption" color="neutral.600">
+              Type
+            </Text>
+            <Text variant="body2" weight="medium">
+              {listing.type}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text variant="caption" color="neutral.600">
+              Weight
+            </Text>
+            <Text variant="body2" weight="medium">
+              {listing.weight}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text variant="caption" color="neutral.600">
+              Status
+            </Text>
+            <Text 
+              variant="body2" 
+              weight="medium"
+              style={{
+                color: listing.available === 'In stock' ? Colors.success[600] : Colors.warning[600]
+              }}
+            >
+              {listing.available}
+            </Text>
+          </View>
+        </View>
+
+        <Text variant="body2" color="neutral.600" style={styles.description}>
+          {listing.description}
+        </Text>
+
+        <View style={styles.footer}>
+          <View style={styles.locationContainer}>
+            <MapPin size={16} color={Colors.neutral[600]} />
+            <Text variant="caption" color="neutral.600" style={styles.location}>
+              {listing.location}
+            </Text>
+          </View>
+          <View style={styles.sellerInfo}>
+            <Text variant="caption" color="neutral.600">
+              {listing.seller.name}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Card>
+  );
+
+  const renderMilkCard = (listing: typeof milkListings[0]) => (
+    <Card key={listing.id} style={styles.listingCard}>
+      <Image source={{ uri: listing.image }} style={styles.listingImage} />
+      <View style={styles.listingContent}>
+        <View style={styles.listingHeader}>
+          <View>
+            <Text variant="h5" weight="medium">
+              {listing.title}
+            </Text>
+            <Text variant="body2" color="primary.500" style={styles.price}>
+              {listing.price}
+            </Text>
+          </View>
+          <Button variant="primary" size="sm">
+            Contact
+          </Button>
+        </View>
+
+        <View style={styles.detailsGrid}>
+          <View style={styles.detailItem}>
+            <Text variant="caption" color="neutral.600">
+              Type
+            </Text>
+            <Text variant="body2" weight="medium">
+              {listing.type}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text variant="caption" color="neutral.600">
+              Volume
+            </Text>
+            <Text variant="body2" weight="medium">
+              {listing.volume}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text variant="caption" color="neutral.600">
+              Available
+            </Text>
+            <Text variant="body2" weight="medium">
+              {listing.available}
+            </Text>
+          </View>
+        </View>
+
+        <Text variant="body2" color="neutral.600" style={styles.description}>
+          {listing.description}
+        </Text>
+
+        <View style={styles.footer}>
+          <View style={styles.locationContainer}>
+            <MapPin size={16} color={Colors.neutral[600]} />
+            <Text variant="caption" color="neutral.600" style={styles.location}>
+              {listing.location}
+            </Text>
+          </View>
+          <View style={styles.sellerInfo}>
+            <Text variant="caption" color="neutral.600">
+              {listing.seller.name}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Card>
+  );
 
   const renderListingCard = (listing: typeof listings[0]) => (
     <Card key={listing.id} style={styles.listingCard}>
@@ -222,13 +483,20 @@ function MarketplaceContent() {
                 setShowSellDropdown(false);
               }}
             >
-              <Text
-                variant="body"
-                weight={activeTab === 'buy' ? 'medium' : 'regular'}
-                color={activeTab === 'buy' ? 'primary.500' : 'neutral.600'}
-              >
-                Buy {selectedBuyCategory}
-              </Text>
+              <View style={styles.tabContent}>
+                <Text
+                  variant="body"
+                  weight={activeTab === 'buy' ? 'medium' : 'regular'}
+                  color={activeTab === 'buy' ? 'primary.500' : 'neutral.600'}
+                >
+                  Buy
+                </Text>
+                <ChevronDown 
+                  size={16} 
+                  color={activeTab === 'buy' ? Colors.primary[500] : Colors.neutral[600]} 
+                  style={styles.dropdownIcon}
+                />
+              </View>
             </TouchableOpacity>
             {showBuyDropdown && (
               <View style={styles.dropdown}>
@@ -257,13 +525,20 @@ function MarketplaceContent() {
                 setShowBuyDropdown(false);
               }}
             >
-              <Text
-                variant="body"
-                weight={activeTab === 'sell' ? 'medium' : 'regular'}
-                color={activeTab === 'sell' ? 'primary.500' : 'neutral.600'}
-              >
-                Sell {selectedSellCategory}
-              </Text>
+              <View style={styles.tabContent}>
+                <Text
+                  variant="body"
+                  weight={activeTab === 'sell' ? 'medium' : 'regular'}
+                  color={activeTab === 'sell' ? 'primary.500' : 'neutral.600'}
+                >
+                  Sell
+                </Text>
+                <ChevronDown 
+                  size={16} 
+                  color={activeTab === 'sell' ? Colors.primary[500] : Colors.neutral[600]} 
+                  style={styles.dropdownIcon}
+                />
+              </View>
             </TouchableOpacity>
             {showSellDropdown && (
               <View style={styles.dropdown}>
@@ -306,29 +581,25 @@ function MarketplaceContent() {
 
       <ScrollView style={styles.content}>
         {activeTab === 'buy' && (
+          <View style={styles.sectionHeader}>
+            <Text variant="h5" weight="medium">
+              {selectedBuyCategory}
+            </Text>
+          </View>
+        )}
+        {activeTab === 'buy' && (
           <>
             {selectedBuyCategory === 'Livestock' && listings.map(renderListingCard)}
-            {selectedBuyCategory === 'Milk' && (
-              <Card style={styles.sellCard}>
-                <Text variant="h5" weight="medium" style={styles.sellTitle}>
-                  Buy Milk Products
-                </Text>
-                <Text variant="body" color="neutral.600" style={styles.sellDescription}>
-                  Browse available milk products from local farmers.
-                </Text>
-              </Card>
-            )}
-            {selectedBuyCategory === 'Feed Products' && (
-              <Card style={styles.sellCard}>
-                <Text variant="h5" weight="medium" style={styles.sellTitle}>
-                  Buy Feed Products
-                </Text>
-                <Text variant="body" color="neutral.600" style={styles.sellDescription}>
-                  Find quality feed products for your livestock.
-                </Text>
-              </Card>
-            )}
+            {selectedBuyCategory === 'Milk' && milkListings.map(renderMilkCard)}
+            {selectedBuyCategory === 'Feed Products' && feedListings.map(renderFeedCard)}
           </>
+        )}
+        {activeTab === 'sell' && (
+          <View style={styles.sectionHeader}>
+            <Text variant="h5" weight="medium">
+              {selectedSellCategory}
+            </Text>
+          </View>
         )}
         {activeTab === 'sell' && (
           <Card style={styles.sellCard}>
@@ -386,6 +657,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  tabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dropdownIcon: {
+    marginLeft: 4,
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   activeTab: {
     borderBottomWidth: 2,
