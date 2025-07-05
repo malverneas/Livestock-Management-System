@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { Card } from '../../components/ui/Card';
-import { ClipboardList, Baby, Pill, Skull, FileHeart, DollarSign } from 'lucide-react-native';
+import { ClipboardList, Baby, Pill, Skull, FileHeart, DollarSign, Activity, Package, Stethoscope } from 'lucide-react-native';
 import Colors from '../../constants/Colors';
 import { Stack } from 'expo-router';
 
@@ -57,7 +57,7 @@ function AddContent() {
     },
     {
       id: 'pregnancy',
-      title: 'Pregnancy Diagnosis & Calving',
+      title: 'Pregnancy & Calving',
       icon: <FileHeart size={24} color={Colors.white} />,
       color: Colors.accent[500],
     },
@@ -66,6 +66,24 @@ function AddContent() {
       title: 'Sales & Purchases',
       icon: <DollarSign size={24} color={Colors.white} />,
       color: Colors.secondary[500],
+    },
+    {
+      id: 'breeding',
+      title: 'Bull Breeding Soundness',
+      icon: <Activity size={24} color={Colors.white} />,
+      color: Colors.secondary[700],
+    },
+    {
+      id: 'feed',
+      title: 'Feed Inventory',
+      icon: <Package size={24} color={Colors.white} />,
+      color: Colors.warning[600],
+    },
+    {
+      id: 'health',
+      title: 'Health Record',
+      icon: <Stethoscope size={24} color={Colors.white} />,
+      color: Colors.success[600],
     },
   ];
 
@@ -113,6 +131,27 @@ function AddContent() {
             <Text>Sales Register Form</Text>
           </Card>
         );
+      case 'breeding':
+        return (
+          <Card title="Add Bull Breeding Soundness Evaluation" style={styles.formCard}>
+            {/* Add Bull Breeding Soundness form components here */}
+            <Text>Bull Breeding Soundness Evaluation Form</Text>
+          </Card>
+        );
+      case 'feed':
+        return (
+          <Card title="Add to Feed Inventory" style={styles.formCard}>
+            {/* Add Feed Inventory form components here */}
+            <Text>Feed Inventory Form</Text>
+          </Card>
+        );
+      case 'health':
+        return (
+          <Card title="Add Health Record" style={styles.formCard}>
+            {/* Add Health Record form components here */}
+            <Text>Health Record Form</Text>
+          </Card>
+        );
       default:
         return null;
     }
@@ -122,7 +161,7 @@ function AddContent() {
     <ScreenContainer style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <Card style={styles.stepCard}>
-          <Text variant="subtitle1" weight="medium" style={styles.stepTitle}>
+          <Text variant="h6" weight="medium" style={styles.stepTitle}>
             Step 1: Select Record Type
           </Text>
           <Text variant="body2" color="neutral.500" style={styles.stepDescription}>
@@ -155,7 +194,7 @@ function AddContent() {
 
         {selectedRegister && (
           <Card style={styles.stepCard}>
-            <Text variant="subtitle1" weight="medium" style={styles.stepTitle}>
+            <Text variant="h6" weight="medium" style={styles.stepTitle}>
               Step 2: Fill in Details
             </Text>
             <Text variant="body2" color="neutral.500" style={styles.stepDescription}>
@@ -184,6 +223,9 @@ const styles = StyleSheet.create({
   stepTitle: {
     marginBottom: 8,
   },
+  formCard: {
+    marginTop: 16,
+  },
   stepDescription: {
     marginBottom: 24,
   },
@@ -193,7 +235,7 @@ const styles = StyleSheet.create({
     margin: -8,
   },
   gridItem: {
-    width: '50%',
+    width: '33.33%',
     padding: 8,
   },
   selectedItem: {

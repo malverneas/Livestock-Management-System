@@ -20,7 +20,7 @@ const listings = [
     description: 'Healthy Brahman bull with excellent genetics. Perfect for breeding.',
     image: 'https://images.pexels.com/photos/735968/pexels-photo-735968.jpeg',
     seller: {
-      name: 'John Smith',
+      name: 'John Moyo',
       phone: '+263 77 123 4567',
     },
   },
@@ -35,7 +35,7 @@ const listings = [
     description: 'Pure Mashona heifer, ready for breeding. Good temperament.',
     image: 'https://images.pexels.com/photos/422218/pexels-photo-422218.jpeg',
     seller: {
-      name: 'Sarah Johnson',
+      name: 'Sarah Nkomo',
       phone: '+263 77 987 6543',
     },
   },
@@ -52,7 +52,7 @@ const feedListings = [
     description: 'High-quality dairy meal with 18% protein content. Ideal for lactating cows to maintain milk production.',
     image: 'https://images.pexels.com/photos/6589027/pexels-photo-6589027.jpeg',
     seller: {
-      name: 'AgroFeeds Zimbabwe',
+      name: 'Tendai Moyo',
       phone: '+263 77 444 5566',
     },
     available: 'In stock',
@@ -68,7 +68,7 @@ const feedListings = [
     description: 'Complete starter feed for chicks from day-old to 4 weeks. Contains essential nutrients for healthy growth.',
     image: 'https://images.pexels.com/photos/6589037/pexels-photo-6589037.jpeg',
     seller: {
-      name: 'Poultry Plus',
+      name: 'Nomsa Ndlovu',
       phone: '+263 77 555 6677',
     },
     available: 'In stock',
@@ -84,7 +84,7 @@ const feedListings = [
     description: 'Nutritionally balanced pellets for goats and sheep. Promotes weight gain and good health.',
     image: 'https://images.pexels.com/photos/6589042/pexels-photo-6589042.jpeg',
     seller: {
-      name: 'Livestock Feeds Co.',
+      name: 'James Chikomo',
       phone: '+263 77 666 7788',
     },
     available: 'Limited stock',
@@ -100,7 +100,7 @@ const feedListings = [
     description: 'Complete feed for growing pigs from 20kg to market weight. Promotes steady growth and feed efficiency.',
     image: 'https://images.pexels.com/photos/6589049/pexels-photo-6589049.jpeg',
     seller: {
-      name: 'ZimPig Feeds',
+      name: 'Sarah Muchena',
       phone: '+263 77 777 8899',
     },
     available: 'In stock',
@@ -119,7 +119,7 @@ const milkListings = [
     description: 'Fresh, raw cow milk from grass-fed cattle. Collected daily. Minimum order: 5 liters.',
     image: 'https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg',
     seller: {
-      name: 'Green Pastures Dairy',
+      name: 'Grace Muzenda',
       phone: '+263 77 111 2233',
     },
     available: 'Daily',
@@ -135,7 +135,7 @@ const milkListings = [
     description: 'Freshly pasteurized milk, packed in 2L bottles. Available in supermarkets.',
     image: 'https://images.pexels.com/photos/5946720/pexels-photo-5946720.jpeg',
     seller: {
-      name: 'Harare Dairies',
+      name: 'Thomas Sibanda',
       phone: '+263 77 222 3344',
     },
     available: 'In stock',
@@ -151,7 +151,7 @@ const milkListings = [
     description: 'Certified organic raw milk from free-range cattle. No antibiotics or hormones.',
     image: 'https://images.pexels.com/photos/5946743/pexels-photo-5946743.jpeg',
     seller: {
-      name: 'Nyanga Organics',
+      name: 'Patience Nyoni',
       phone: '+263 77 333 4455',
     },
     available: 'Tuesday & Friday',
@@ -169,7 +169,7 @@ const lostAndFound = [
     description: 'Brown Brahman cow with white patches. Tag number TAG123.',
     image: 'https://images.pexels.com/photos/139923/pexels-photo-139923.jpeg',
     contact: {
-      name: 'David Brown',
+      name: 'David Moyo',
       phone: '+263 77 555 1234',
     },
   },

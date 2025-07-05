@@ -94,6 +94,50 @@ const weightData = [
   },
 ];
 
+// Sample data for feed inventory
+const feedInventoryData = [
+  {
+    id: 'F001',
+    name: 'Dairy Meal 18%',
+    type: 'Cattle Feed',
+    quantity: '250 kg',
+    unit: '50kg bags',
+    supplier: 'AgroFeeds',
+    lastUpdated: '2025-07-01',
+    status: 'In Stock'
+  },
+  {
+    id: 'F002',
+    name: 'Poultry Starter',
+    type: 'Poultry Feed',
+    quantity: '150 kg',
+    unit: '25kg bags',
+    supplier: 'Poultry Plus',
+    lastUpdated: '2025-07-03',
+    status: 'Low Stock'
+  },
+  {
+    id: 'F003',
+    name: 'Goat Pellets',
+    type: 'Small Ruminant',
+    quantity: '200 kg',
+    unit: '40kg bags',
+    supplier: 'Livestock Feeds',
+    lastUpdated: '2025-06-28',
+    status: 'In Stock'
+  },
+  {
+    id: 'F004',
+    name: 'Pig Grower',
+    type: 'Swine Feed',
+    quantity: '300 kg',
+    unit: '50kg bags',
+    supplier: 'ZimPig Feeds',
+    lastUpdated: '2025-07-04',
+    status: 'In Stock'
+  },
+];
+
 // Filter options
 const breedOptions = [
   { value: 'all', label: 'All' },
@@ -457,12 +501,78 @@ function RegisterContent() {
             />
           </ScrollView>
         </Card>
+
+        {/* Feed Inventory Section */}
+        <Card title="Feed Inventory" style={styles.card}>
+          <DataTable
+            columns={[
+              { key: 'id', title: 'ID', width: 70 },
+              { key: 'name', title: 'Feed Name', width: 120 },
+              { key: 'type', title: 'Type', width: 100 },
+              { 
+                key: 'quantity', 
+                title: 'Quantity', 
+                width: 90,
+                render: (value: string, row: any) => (
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text>{value} </Text>
+                    <Text variant="caption" color="neutral.500">({row.unit})</Text>
+                  </View>
+                )
+              },
+              { key: 'supplier', title: 'Supplier', width: 100 },
+              { key: 'lastUpdated', title: 'Last Updated', width: 100 },
+              { 
+                key: 'status', 
+                title: 'Status', 
+                width: 90,
+                render: (value: string) => (
+                  <View 
+                    style={[
+                      styles.statusBadge,
+                      { 
+                        backgroundColor: 
+                          value === 'In Stock' ? 'rgba(34, 197, 94, 0.1)' :
+                          value === 'Low Stock' ? 'rgba(234, 179, 8, 0.1)' :
+                          'rgba(239, 68, 68, 0.1)',
+                        borderColor: 
+                          value === 'In Stock' ? Colors.success[400] :
+                          value === 'Low Stock' ? Colors.warning[400] :
+                          Colors.error[400],
+                      }
+                    ]}
+                  >
+                    <Text 
+                      variant="caption" 
+                      weight="medium"
+                      color={
+                        value === 'In Stock' ? 'success.600' :
+                        value === 'Low Stock' ? 'warning.600' :
+                        'error.600'
+                      }
+                    >
+                      {value}
+                    </Text>
+                  </View>
+                )
+              },
+            ]}
+            data={feedInventoryData}
+          />
+        </Card>
       </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
   container: {
     flex: 1,
     padding: 16,
