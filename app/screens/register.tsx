@@ -153,6 +153,15 @@ const sourceOptions = [
   { label: 'Purchased', value: 'Purchased' },
 ];
 
+// Animal Health Record type
+interface AnimalHealthRecord {
+  id: string;
+  animalId: string;
+  date: string;
+  treatment: string;
+  status: 'Completed' | 'Scheduled' | 'Pending';
+}
+
 // Bull Breeding Soundness data type
 type BullBreedingRecord = {
   id: string;
@@ -166,6 +175,15 @@ type BullBreedingRecord = {
   score: string;
   classification: 'SPB' | 'USPB' | 'CD';
 };
+
+// Sample health records data
+const animalHealthRecords: AnimalHealthRecord[] = [
+  { id: '1', animalId: 'A1001', date: '2025-06-15', treatment: 'Deworming', status: 'Completed' },
+  { id: '2', animalId: 'A1002', date: '2025-06-16', treatment: 'Vaccination', status: 'Scheduled' },
+  { id: '3', animalId: 'A1003', date: '2025-06-17', treatment: 'Hoof Trimming', status: 'Pending' },
+  { id: '4', animalId: 'A1004', date: '2025-06-18', treatment: 'Health Check', status: 'Completed' },
+  { id: '5', animalId: 'A1005', date: '2025-06-19', treatment: 'Vaccination', status: 'Scheduled' },
+];
 
 const bullBreedingSoundnessData: BullBreedingRecord[] = [
   {
@@ -396,6 +414,43 @@ function RegisterContent() {
               { key: 'description', title: 'Description', width: 200 },
             ]}
             data={mortalityData}
+          />
+        </Card>
+
+        {/* Animal Health Records Section */}
+        <Card title="Animal Health Records" style={styles.card}>
+          <DataTable
+            columns={[
+              { key: 'date', title: 'Date', width: 100 },
+              { key: 'animalId', title: 'Animal ID', width: 100 },
+              { key: 'treatment', title: 'Treatment', width: 200 },
+              { 
+                key: 'status', 
+                title: 'Status', 
+                width: 100,
+                render: (value: string) => (
+                  <View style={[
+                    styles.statusBadge, 
+                    { 
+                      backgroundColor: value === 'Completed' ? '#DCF7E8' : 
+                                    value === 'Scheduled' ? '#E0F2FE' : '#FEF3C7',
+                    }
+                  ]}>
+                    <Text 
+                      variant="caption" 
+                      style={{ 
+                        color: value === 'Completed' ? Colors.success[700] : 
+                              value === 'Scheduled' ? Colors.primary[700] : Colors.warning[700],
+                        fontWeight: '500',
+                      }}
+                    >
+                      {value}
+                    </Text>
+                  </View>
+                )
+              },
+            ]}
+            data={animalHealthRecords}
           />
         </Card>
 

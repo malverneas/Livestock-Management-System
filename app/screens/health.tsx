@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { Activity, ArrowRight } from 'lucide-react-native';
 import { Card } from '../../components/ui/Card';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react-native';
 import Colors from '../../constants/Colors';
@@ -87,15 +88,7 @@ export default function HealthScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Health',
-          headerLeft: () => (
-            <TouchableOpacity 
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <ArrowLeft size={24} color={Colors.primary[500]} />
-            </TouchableOpacity>
-          ),
+          title: 'Health'
         }}
       />
       <HealthContent />
@@ -158,54 +151,34 @@ function HealthContent() {
           {farmHealthMetrics.map(renderMetricCard)}
         </View>
 
-        {/* Animal Health Records Section */}
-        <View style={styles.section}>
-          <Text variant="h5" weight="bold" style={styles.sectionTitle}>
-            Animal Health Records
-          </Text>
-          <Text variant="body2" color="neutral.500" style={styles.sectionSubtitle}>
-            Herd Health Register
-          </Text>
-          
-          <Card style={styles.recordsCard}>
-            <View style={styles.recordsHeader}>
-              <Text variant="body2" weight="medium" style={styles.recordHeaderCell}>Animal ID</Text>
-              <Text variant="body2" weight="medium" style={styles.recordHeaderCell}>Date</Text>
-              <Text variant="body2" weight="medium" style={[styles.recordHeaderCell, { flex: 2 }]}>Treatment</Text>
-              <Text variant="body2" weight="medium" style={styles.recordHeaderCell}>Status</Text>
+        {/* Animal Health Records Navigation Card */}
+        <Card style={{
+          marginBottom: 16,
+          borderRadius: 12,
+          padding: 16,
+          backgroundColor: Colors.primary[50],
+          borderWidth: 1,
+          borderColor: Colors.primary[100],
+        }}>
+          <View style={styles.inventoryHeader}>
+            <View style={styles.inventoryTitleContainer}>
+              <Activity size={24} color={Colors.primary[500]} style={styles.inventoryIcon} />
+              <Text variant="h5" weight="medium">
+                Animal Health Records
+              </Text>
             </View>
-            
-            {animalHealthRecords.map((record) => (
-              <View key={record.id} style={styles.recordRow}>
-                <Text variant="body2" style={styles.recordCell}>{record.animalId}</Text>
-                <Text variant="body2" style={styles.recordCell}>{record.date}</Text>
-                <Text variant="body2" style={[styles.recordCell, { flex: 2 }]}>{record.treatment}</Text>
-                <View style={styles.statusContainer}>
-                  <View 
-                    style={[
-                      styles.statusBadge, 
-                      { 
-                        backgroundColor: record.status === 'Completed' ? '#DCF7E8' : 
-                                      record.status === 'Scheduled' ? '#E0F2FE' : '#FEF3C7',
-                      }
-                    ]}
-                  >
-                    <Text 
-                      variant="caption" 
-                      style={{ 
-                        color: record.status === 'Completed' ? Colors.success[700] : 
-                              record.status === 'Scheduled' ? Colors.primary[700] : Colors.warning[700],
-                        fontWeight: '500',
-                      }}
-                    >
-                      {record.status}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </Card>
-        </View>
+            <TouchableOpacity 
+              style={styles.inventoryButton}
+              onPress={() => router.push('./register')}
+            >
+              <Text variant="button" color="primary.500">View Records</Text>
+              <ArrowRight size={20} color={Colors.primary[500]} />
+            </TouchableOpacity>
+          </View>
+          <Text variant="body2" color="neutral.600" style={styles.inventoryDescription}>
+            Access and manage comprehensive health records, treatments, and medical history for your livestock.
+          </Text>
+        </Card>
       </ScrollView>
     </ScreenContainer>
   );
@@ -304,7 +277,32 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   percentageFill: {
-    height: '100%',
+    height: 8,
     borderRadius: 4,
+    marginTop: 4,
+  },
+  inventoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  inventoryTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  inventoryIcon: {
+    marginRight: 12,
+  },
+  inventoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 8,
+  },
+  inventoryDescription: {
+    marginTop: 4,
+    lineHeight: 20,
   },
 });

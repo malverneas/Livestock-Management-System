@@ -33,7 +33,7 @@ export function ScreenContainer({
 
   return (
     <SafeAreaView style={containerStyle}>
-      <StatusBar style="auto" />
+      <StatusBar style='auto' />
       {scrollable ? (
         <ScrollView
           style={styles.scrollView}

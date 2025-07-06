@@ -45,7 +45,7 @@ export function Header({
 
 const styles = StyleSheet.create({
   header: {
-    height: 60,
+    height: 80,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

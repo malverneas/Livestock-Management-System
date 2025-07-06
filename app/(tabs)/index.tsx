@@ -298,10 +298,10 @@ export default function HomeScreen() {
               }}
               scrollEventThrottle={16}
             >
-              <View style={styles.chartContainer}>
+              <View key="line-chart" style={styles.chartContainer}>
                 <LineChart
                   data={timeframe === 'monthly' ? dlshiftMonthlyData : dlshiftYearlyData}
-                  width={Dimensions.get('window').width - 64}
+                  width={Dimensions.get('window').width - 70}
                   height={180}
                   chartConfig={{
                     backgroundColor: Colors.white,
@@ -322,10 +322,10 @@ export default function HomeScreen() {
                 />
               </View>
               
-              <View style={styles.chartContainer}>
+              <View key="bar-chart" style={styles.chartContainer}>
                 <BarChart
                   data={categoryScores}
-                  width={Dimensions.get('window').width - 64}
+                  width={Dimensions.get('window').width - 100}
                   height={180}
                   yAxisLabel=""
                   yAxisSuffix="%"
@@ -464,6 +464,7 @@ const styles = StyleSheet.create({
   },
   carouselContainer: {
     marginTop: 8,
+    marginHorizontal:-35
   },
   chartHeader: {
     flexDirection: 'row',
@@ -531,7 +532,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   chartContainer: {
-    alignItems: 'center',
+    marginRight:35,
+    marginVertical:8
   },
   sectionTitle: {
     marginTop: 8,
