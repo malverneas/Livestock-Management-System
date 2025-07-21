@@ -11,9 +11,10 @@ interface CardProps {
   style?: ViewStyle;
   onPress?: () => void;
   footer?: React.ReactNode;
+  headerRight?: React.ReactNode;
 }
 
-export function Card({ title, subtitle, children, style, onPress, footer }: CardProps) {
+export function Card({ title, subtitle, children, style, onPress, footer, headerRight }: CardProps) {
   const CardContainer = onPress ? TouchableOpacity : View;
 
   return (
@@ -24,16 +25,25 @@ export function Card({ title, subtitle, children, style, onPress, footer }: Card
     >
       {(title || subtitle) && (
         <View style={styles.header}>
-          {title && (
-            <Text variant="h6" weight="medium" color="neutral.800">
-              {title}
-            </Text>
-          )}
-          {subtitle && (
-            <Text variant="body2" color="neutral.600" style={styles.subtitle}>
-              {subtitle}
-            </Text>
-          )}
+          <View style={styles.headerContent}>
+            <View>
+              {title && (
+                <Text variant="h6" weight="medium" color="neutral.800">
+                  {title}
+                </Text>
+              )}
+              {subtitle && (
+                <Text variant="body2" color="neutral.600" style={styles.subtitle}>
+                  {subtitle}
+                </Text>
+              )}
+            </View>
+            {headerRight && (
+              <View style={styles.headerRight}>
+                {headerRight}
+              </View>
+            )}
+          </View>
         </View>
       )}
       <View style={styles.content}>{children}</View>
@@ -53,6 +63,14 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral[200],
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerRight: {
+    marginLeft: Spacing.sm,
   },
   subtitle: {
     marginTop: 4,

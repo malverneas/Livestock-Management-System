@@ -17,7 +17,7 @@ interface PickerProps {
   style?: any;
 }
 
-export function Picker({ label, value, onValueChange, items, style }: PickerProps) {
+export function Picker({ label, value, onValueChange, items = [], style }: PickerProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const selectedItem = items.find(item => item.value === value);
 
