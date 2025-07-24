@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, Modal, TextInput, TouchableOpacity, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Text } from '../../components/typography/Text';
 import { Card } from '../../components/ui/Card';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
@@ -9,6 +10,7 @@ import { DataTable } from '../../components/tables/DataTable';
 import { PieChart } from '../../components/charts/PieChart';
 import Colors from '../../constants/Colors';
 import { Stack, useRouter } from 'expo-router';
+
 
 // Sample data for herd totals
 const herdTotals = {
@@ -287,7 +289,7 @@ const heatBreedingRecords: HeatBreedingRecord[] = [
   },
 ];
 
-const pregnancyCalvingRecords: PregnancyCalvingRecord[] = [
+const pregnancyCalvingData: PregnancyCalvingRecord[] = [
   {
     id: 'P001',
     cowEarTag: 'C1001',
@@ -390,13 +392,17 @@ const bullBreedingSoundnessData: BullBreedingRecord[] = [
 
 // Interface for animal data
 interface AnimalData {
-  unitNo: string;
+  unitNo?: string;  // Made optional since we're removing it from the form
   tag: string;
   age: string;
+  dateOfBirth: string;  // Added dateOfBirth field
   breed: string;
   sex: 'Male' | 'Female';
   stockType: string;
   source: string;
+  observer?: string;
+  birthWeight?: string;
+  deliveryType?: 'Natural' | 'Assisted' | 'C-Section';
   id?: string;
 }
 
@@ -406,15 +412,9 @@ interface DrugData {
   drugClass: string;
   type: string;
   name: string;
-  batchNumber: string;
-  expiryDate: string;
-  quantity: string;
-  unit: 'ml' | 'mg' | 'tablet' | 'bottle' | 'sachet';
   withdrawalPeriod: string;
   pregnancySafe: 'Yes' | 'No';
-  stock: string;
-  supplier?: string;
-  notes?: string;
+  stockStatus: 'In Stock' | 'Low Stock' | 'Out of Stock';
 }
 
 // Sample data for herd register
@@ -428,34 +428,9 @@ const initialHerdRegisterData: AnimalData[] = [
 
 // Sample data for drug register
 const initialDrugRegisterData: DrugData[] = [
-  { 
-    id: '1', 
-    drugClass: 'Antibiotic', 
-    type: 'Injectable', 
-    name: 'Oxytetracycline', 
-    batchNumber: 'B12345',
-    expiryDate: '2025-12-31',
-    quantity: '100',
-    unit: 'ml',
-    withdrawalPeriod: '21 days',
-    pregnancySafe: 'No',
-    stock: '5 bottles',
-    supplier: 'VetPharm Ltd'
-  },
-  { 
-    id: '2', 
-    drugClass: 'Vitamin', 
-    type: 'Oral', 
-    name: 'Vitamin B Complex', 
-    batchNumber: 'VITB2025',
-    expiryDate: '2026-06-30',
-    quantity: '500',
-    unit: 'ml',
-    withdrawalPeriod: '0 days',
-    pregnancySafe: 'Yes',
-    stock: '2 liters',
-    supplier: 'AgriHealth'
-  },
+  { id: '1', drugClass: 'Antibiotic', type: 'Injectable', name: 'Oxytetracycline', unit: 'bottle', withdrawalPeriod: '21 days', pregnancySafe: 'Yes', stockStatus: 'In Stock' },
+  { id: '2', drugClass: 'Vitamin', type: 'Oral', name: 'Vitamin B Complex', unit: 'tablet', withdrawalPeriod: '0 days', pregnancySafe: 'Yes', stockStatus: 'In Stock' },
+  { id: '3', drugClass: 'Antiparasitic', type: 'Pour-on', name: 'Ivermectin', unit: 'ml', withdrawalPeriod: '35 days', pregnancySafe: 'No', stockStatus: 'Low Stock' },
 ];
 
 
@@ -481,15 +456,9 @@ function RegisterContent() {
     drugClass: '',
     type: '',
     name: '',
-    batchNumber: '',
-    expiryDate: '',
-    quantity: '',
-    unit: 'ml',
     withdrawalPeriod: '',
     pregnancySafe: 'No',
-    stock: '',
-    supplier: '',
-    notes: ''
+    stockStatus: 'In Stock'
   });
 
   const handleAddDrug = () => {
@@ -499,15 +468,9 @@ function RegisterContent() {
       drugClass: '',
       type: '',
       name: '',
-      batchNumber: '',
-      expiryDate: '',
-      quantity: '',
-      unit: 'ml',
       withdrawalPeriod: '',
       pregnancySafe: 'No',
-      stock: '',
-      supplier: '',
-      notes: ''
+      stockStatus: 'In Stock'
     });
     setIsAddDrugModalVisible(false);
   };
@@ -523,10 +486,7 @@ function RegisterContent() {
         <View style={styles.modalContent}>
           <Text variant="h6" weight="bold" style={styles.modalTitle}>Add New Drug</Text>
           
-          <ScrollView 
-            style={styles.modalScrollView}
-            contentContainerStyle={styles.modalScrollViewContent}
-          >
+          <ScrollView>
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Drug Class</Text>
               <TextInput
@@ -558,51 +518,6 @@ function RegisterContent() {
             </View>
             
             <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Batch Number</Text>
-              <TextInput
-                style={styles.input}
-                value={newDrug.batchNumber}
-                onChangeText={(text) => setNewDrug({...newDrug, batchNumber: text})}
-                placeholder="e.g., B12345"
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Expiry Date</Text>
-              <TextInput
-                style={styles.input}
-                value={newDrug.expiryDate}
-                onChangeText={(text) => setNewDrug({...newDrug, expiryDate: text})}
-                placeholder="YYYY-MM-DD"
-                keyboardType="numbers-and-punctuation"
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Quantity</Text>
-              <View style={{ flexDirection: 'row' }}>
-                <TextInput
-                  style={[styles.input, { flex: 1, marginRight: 8 }]}
-                  value={newDrug.quantity}
-                  onChangeText={(text) => setNewDrug({...newDrug, quantity: text})}
-                  placeholder="e.g., 100"
-                  keyboardType="numeric"
-                />
-                <Picker
-                  selectedValue={newDrug.unit}
-                  style={[styles.input, { flex: 1 }]}
-                  onValueChange={(itemValue) => setNewDrug({...newDrug, unit: itemValue as DrugData['unit']})}
-                >
-                  <Picker.Item label="ml" value="ml" />
-                  <Picker.Item label="mg" value="mg" />
-                  <Picker.Item label="Tablets" value="tablet" />
-                  <Picker.Item label="Bottles" value="bottle" />
-                  <Picker.Item label="Sachets" value="sachet" />
-                </Picker>
-              </View>
-            </View>
-            
-            <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Withdrawal Period</Text>
               <TextInput
                 style={styles.input}
@@ -631,33 +546,15 @@ function RegisterContent() {
             </View>
             
             <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Current Stock</Text>
-              <TextInput
-                style={styles.input}
-                value={newDrug.stock}
-                onChangeText={(text) => setNewDrug({...newDrug, stock: text})}
-                placeholder="e.g., 5 bottles, 2 liters"
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Supplier (Optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={newDrug.supplier}
-                onChangeText={(text) => setNewDrug({...newDrug, supplier: text})}
-                placeholder="e.g., VetPharm Ltd"
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Notes (Optional)</Text>
-              <TextInput
-                style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
-                value={newDrug.notes}
-                onChangeText={(text) => setNewDrug({...newDrug, notes: text})}
-                placeholder="Any additional notes"
-                multiline
+              <Picker
+                label="Stock Status"
+                value={newDrug.stockStatus}
+                onValueChange={(value) => setNewDrug({...newDrug, stockStatus: value as DrugData['stockStatus']})}
+                items={[
+                  { label: 'In Stock', value: 'In Stock' },
+                  { label: 'Low Stock', value: 'Low Stock' },
+                  { label: 'Out of Stock', value: 'Out of Stock' }
+                ]}
               />
             </View>
           </ScrollView>
@@ -672,7 +569,7 @@ function RegisterContent() {
             </Button>
             <Button 
               onPress={handleAddDrug}
-              disabled={!newDrug.drugClass || !newDrug.name || !newDrug.quantity}
+              disabled={!newDrug.drugClass || !newDrug.name}
             >
               Add Drug
             </Button>
@@ -685,24 +582,875 @@ function RegisterContent() {
   const [selectedBreed, setSelectedBreed] = useState('All');
   const [selectedSource, setSelectedSource] = useState('All');
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isAddHealthRecordModalVisible, setIsAddHealthRecordModalVisible] = useState(false);
+  const [isAddBreedingRecordModalVisible, setIsAddBreedingRecordModalVisible] = useState(false);
+  const [isAddTransactionModalVisible, setIsAddTransactionModalVisible] = useState(false);
+  const [isAddWeightRecordModalVisible, setIsAddWeightRecordModalVisible] = useState(false);
+  const [isAddPregnancyModalVisible, setIsAddPregnancyModalVisible] = useState(false);
+  const [isAddHeatBreedingModalVisible, setIsAddHeatBreedingModalVisible] = useState(false);
   const [herdRegisterData, setHerdRegisterData] = useState<AnimalData[]>(initialHerdRegisterData);
+  const [pregnancyCalvingRecords, setPregnancyCalvingRecords] = useState<PregnancyCalvingRecord[]>(pregnancyCalvingData);
+  const [newPregnancyRecord, setNewPregnancyRecord] = useState<Omit<PregnancyCalvingRecord, 'id' | 'expectedCalvingDate' | 'expectedReturnToHeatDate'>>({
+    cowEarTag: '',
+    bodyConditionScore: 3.0,
+    lastServiceDate: new Date().toISOString().split('T')[0],
+    firstTrimesterPD: 'Not Tested',
+    secondTrimesterPD: 'Not Tested',
+    thirdTrimesterPD: 'Not Tested',
+    gestationPeriod: 0,
+    averageBCS: 3.0,
+  });
+  const [healthRecords, setHealthRecords] = useState<AnimalHealthRecord[]>(animalHealthRecords);
+  const [breedingRecords, setBreedingRecords] = useState<BullBreedingRecord[]>(bullBreedingSoundnessData);
+  const [transactions, setTransactions] = useState(transactionData);
+  const [weightRecords, setWeightRecords] = useState(weightData);
+  const [feedInventory, setFeedInventory] = useState(feedInventoryData);
   const [newAnimal, setNewAnimal] = useState<Omit<AnimalData, 'id'>>({ 
-    unitNo: '', 
     tag: '', 
     age: '', 
+    dateOfBirth: '',
     breed: '', 
     sex: 'Male', 
     stockType: '', 
-    source: '' 
+    source: '',
+    observer: '',
+    birthWeight: '',
+    deliveryType: 'Natural'
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [newHealthRecord, setNewHealthRecord] = useState<Omit<AnimalHealthRecord, 'id'>>({
+    animalId: '',
+    date: new Date().toISOString().split('T')[0],
+    treatment: '',
+    status: 'Pending'
+  });
+
+  const [newBreedingRecord, setNewBreedingRecord] = useState<Omit<BullBreedingRecord, 'id'>>({
+    date: new Date().toISOString().split('T')[0],
+    age: '',
+    pe: 'Good',
+    spermMotility: '',
+    spermMorphology: '',
+    scrotal: '',
+    libido: 'Good',
+    score: '',
+    classification: 'SPB'
+  });
+
+  const [newTransaction, setNewTransaction] = useState({
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+    amount: '',
+    type: 'Sale' // Default to Sale, can be changed to Purchase
+  });
+
+  const [newWeightRecord, setNewWeightRecord] = useState({
+    id: '',
+    stockType: 'Bull',
+    age: '',
+    jan: '',
+    feb: '',
+    mar: '',
+    apr: '',
+    may: '',
+    jun: '',
+    jul: '',
+    aug: '',
+    sep: '',
+    oct: '',
+    nov: '',
+    dec: ''
+  });
+
+  const [newHeatBreedingRecord, setNewHeatBreedingRecord] = useState({
+    earTagNumber: '',
+    stockType: 'Cow',
+    bodyConditionScore: 3.0,
+    heatDetectionDate: new Date().toISOString().split('T')[0],
+    observer: '',
+    servicedDate: new Date().toISOString().split('T')[0],
+    breedingStatus: 'Bred',
+    breedingMethod: 'Natural',
+    aiTechnician: '',
+    sireId: '',
+    strawId: '',
+    semenViability: '',
+    returnToHeatDate1: '',
+    dateServed2: '',
+    breedingMethod2: 'Natural',
+    sireUsed2: '',
+    returnToHeatDate2: ''
+  });
+
+  const [isAddFeedModalVisible, setIsAddFeedModalVisible] = useState(false);
+  const [isEditCalfModalVisible, setIsEditCalfModalVisible] = useState(false);
+  const [editingCalf, setEditingCalf] = useState<AnimalData | null>(null);
+  
+  // Function to handle editing a calf record
+  const handleEditCalf = (calf: AnimalData) => {
+    // Set default values if they don't exist
+    const calfWithDefaults = {
+      observer: '',
+      birthWeight: '',
+      deliveryType: 'Natural',
+      ...calf
+    };
+    setEditingCalf(calfWithDefaults);
+    setIsEditCalfModalVisible(true);
+  };
+  
+  // Function to save edited calf record
+  const handleSaveCalf = () => {
+    if (!editingCalf) return;
+    
+    // Update the herd register with the edited calf data
+    const updatedHerdRegister = herdRegisterData.map(animal => 
+      animal.id === editingCalf.id ? { ...editingCalf } : animal
+    );
+    
+    setHerdRegisterData(updatedHerdRegister);
+    setIsEditCalfModalVisible(false);
+    setEditingCalf(null);
+    
+    // Show success message
+    alert('Calf details updated successfully');
+  };
+  
+  // Function to check if a calf record is complete
+  const isCalfRecordComplete = (calf: AnimalData): boolean => {
+    return !!(calf.observer && calf.birthWeight && calf.deliveryType);
+  };
+  
+  
+  // Function to get calf weight if available
+  const getCalfWeight = (tag: string) => {
+    const weightRecord = weightRecords.find(wr => wr.id === tag);
+    if (!weightRecord) return null;
+    
+    // Get the most recent month with a weight
+    const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const currentMonth = new Date().getMonth();
+    
+    // Check months from current backwards to find the most recent weight
+    for (let i = currentMonth; i >= 0; i--) {
+      const month = months[i];
+      if (weightRecord[month as keyof typeof weightRecord]) {
+        return {
+          month: month.charAt(0).toUpperCase() + month.slice(1),
+          weight: weightRecord[month as keyof typeof weightRecord]
+        };
+      }
+    }
+    
+    return null;
+  };
+  const [newFeed, setNewFeed] = useState({
+    id: `F${feedInventoryData.length + 100}`,
+    name: '',
+    type: 'Cattle Feed',
+    quantity: '',
+    unit: 'kg',
+    supplier: '',
+    lastUpdated: new Date().toISOString().split('T')[0],
+    status: 'In Stock'
+  });
+
+  // Function to identify calves (animals younger than 1 year)
+  const getCalves = () => {
+    return herdRegisterData.filter(animal => {
+      // Check if age is less than 1 year (assuming format like '6m' or '11m' for months)
+      const ageMatch = animal.age.match(/(\d+)([ym])/);
+      if (!ageMatch) return false;
+      
+      const [_, value, unit] = ageMatch;
+      return (unit === 'm' && parseInt(value) < 12) || 
+             (unit === 'y' && parseInt(value) === 0);
+    });
+  };
+
+  // Function to check if a calf has weight records
+  const hasWeightRecord = (tag: string) => {
+    return weightData.some(record => record.id === tag);
+  };
+
   const router = useRouter();
 
   const handleAddAnimal = () => {
     const newId = (herdRegisterData.length + 1).toString();
     setHerdRegisterData([...herdRegisterData, { ...newAnimal, id: newId }]);
-    setNewAnimal({ unitNo: '', tag: '', age: '', breed: '', sex: 'Male', stockType: '', source: '' });
+    setNewAnimal({ 
+      tag: '', 
+      age: '', 
+      dateOfBirth: '',
+      breed: '', 
+      sex: 'Male', 
+      stockType: '', 
+      source: '',
+      observer: '',
+      birthWeight: '',
+      deliveryType: 'Natural'
+    });
     setIsAddModalVisible(false);
   };
+
+  const handleAddHealthRecord = () => {
+    const newId = (healthRecords.length + 1).toString();
+    setHealthRecords([...healthRecords, { ...newHealthRecord, id: newId }]);
+    setNewHealthRecord({
+      animalId: '',
+      date: new Date().toISOString().split('T')[0],
+      treatment: '',
+      status: 'Pending'
+    });
+    setIsAddHealthRecordModalVisible(false);
+  };
+
+  const handleAddBreedingRecord = () => {
+    const newId = (breedingRecords.length + 1).toString();
+    setBreedingRecords([...breedingRecords, { ...newBreedingRecord, id: newId }]);
+    setNewBreedingRecord({
+      date: new Date().toISOString().split('T')[0],
+      age: '',
+      pe: 'Good',
+      spermMotility: '',
+      spermMorphology: '',
+      scrotal: '',
+      libido: 'Good',
+      score: '',
+      classification: 'SPB'
+    });
+    setIsAddBreedingRecordModalVisible(false);
+  };
+
+  const handleAddTransaction = () => {
+    const amount = parseFloat(newTransaction.amount);
+    if (isNaN(amount)) return; // Basic validation
+
+    const transaction = {
+      ...newTransaction,
+      amount: newTransaction.type === 'Sale' ? Math.abs(amount) : -Math.abs(amount)
+    };
+
+    setTransactions([...transactions, transaction]);
+    setNewTransaction({
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+      amount: '',
+      type: 'Sale'
+    });
+    setIsAddTransactionModalVisible(false);
+  };
+
+  const handleAddWeightRecord = () => {
+    // Create a new record with all months, using empty string for months without values
+    const newRecord = {
+      ...newWeightRecord,
+      id: `W${weightRecords.length + 1}`,
+      // Ensure all month fields are included, even if empty
+      jan: newWeightRecord.jan || '0',
+      feb: newWeightRecord.feb || '0',
+      mar: newWeightRecord.mar || '0',
+      apr: newWeightRecord.apr || '0',
+      may: newWeightRecord.may || '0',
+      jun: newWeightRecord.jun || '0',
+      jul: newWeightRecord.jul || '0',
+      aug: newWeightRecord.aug || '0',
+      sep: newWeightRecord.sep || '0',
+      oct: newWeightRecord.oct || '0',
+      nov: newWeightRecord.nov || '0',
+      dec: newWeightRecord.dec || '0',
+    };
+
+    setWeightRecords([...weightRecords, newRecord]);
+    // Reset the form
+    setNewWeightRecord({
+      id: '',
+      stockType: 'Bull',
+      age: '',
+      jan: '',
+      feb: '',
+      mar: '',
+      apr: '',
+      may: '',
+      jun: '',
+      jul: '',
+      aug: '',
+      sep: '',
+      oct: '',
+      nov: '',
+      dec: ''
+    });
+    setIsAddWeightRecordModalVisible(false);
+  };
+
+  const handleAddFeed = () => {
+    const newFeedItem = {
+      ...newFeed,
+      id: `F${feedInventory.length + 1}`,
+      lastUpdated: new Date().toISOString().split('T')[0]
+    };
+
+    setFeedInventory([...feedInventory, newFeedItem]);
+    // Reset the form
+    setNewFeed({
+      id: `F${feedInventory.length + 100}`,
+      name: '',
+      type: 'Cattle Feed',
+      quantity: '',
+      unit: 'kg',
+      supplier: '',
+      lastUpdated: new Date().toISOString().split('T')[0],
+      status: 'In Stock'
+    });
+    setIsAddFeedModalVisible(false);
+  };
+
+  const renderAddHealthRecordModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isAddHealthRecordModalVisible}
+      onRequestClose={() => setIsAddHealthRecordModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text variant="h6" weight="bold" style={styles.modalTitle}>Add Health Record</Text>
+          
+          <ScrollView 
+          >
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Animal ID</Text>
+              <TextInput
+                style={styles.input}
+                value={newHealthRecord.animalId}
+                onChangeText={(text) => setNewHealthRecord({...newHealthRecord, animalId: text})}
+                placeholder="e.g., A1001"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Date</Text>
+              <TextInput
+                style={styles.input}
+                value={newHealthRecord.date}
+                onChangeText={(text) => setNewHealthRecord({...newHealthRecord, date: text})}
+                placeholder="YYYY-MM-DD"
+                keyboardType="numbers-and-punctuation"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Treatment</Text>
+              <TextInput
+                style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
+                value={newHealthRecord.treatment}
+                onChangeText={(text) => setNewHealthRecord({...newHealthRecord, treatment: text})}
+                placeholder="Enter treatment details"
+                multiline
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Status</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4 }}>
+                {['Pending', 'Scheduled', 'Completed'].map((status) => (
+                  <TouchableOpacity 
+                    key={status}
+                    style={[
+                      styles.radioButton, 
+                      newHealthRecord.status === status && styles.radioButtonSelected,
+                      { marginRight: 8 }
+                    ]}
+                    onPress={() => setNewHealthRecord({...newHealthRecord, status: status as AnimalHealthRecord['status']})}
+                  >
+                    <Text>{status}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              variant="outline" 
+              onPress={() => setIsAddHealthRecordModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onPress={handleAddHealthRecord}
+              disabled={!newHealthRecord.animalId || !newHealthRecord.treatment}
+            >
+              Add Record
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderAddFeedModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isAddFeedModalVisible}
+      onRequestClose={() => setIsAddFeedModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { maxHeight: '80%', width: '90%' }]}>
+          <Text variant="h6" weight="bold" style={styles.modalTitle}>Add Feed to Inventory</Text>
+          
+          <ScrollView 
+          >
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Feed Name</Text>
+              <TextInput
+                style={styles.input}
+                value={newFeed.name}
+                onChangeText={(text) => setNewFeed({...newFeed, name: text})}
+                placeholder="e.g., Dairy Meal 18%"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Feed Type</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['Cattle Feed', 'Poultry Feed', 'Small Ruminant', 'Pig Feed', 'Other'].map((type) => (
+                  <TouchableOpacity 
+                    key={type}
+                    style={[
+                      styles.radioButton, 
+                      newFeed.type === type && styles.radioButtonSelected,
+                      { marginRight: 8, marginBottom: 8 }
+                    ]}
+                    onPress={() => setNewFeed({...newFeed, type})}
+                  >
+                    <Text>{type}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={[styles.formGroup, { flex: 2, marginRight: 16 }]}>
+                <Text variant="body2" style={styles.label}>Quantity</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newFeed.quantity}
+                  onChangeText={(text) => setNewFeed({...newFeed, quantity: text.replace(/[^0-9]/g, '')})}
+                  placeholder="0"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={[styles.formGroup, { flex: 1 }]}>
+                <Text variant="body2" style={styles.label}>Unit</Text>
+                <View style={[styles.input, { paddingHorizontal: 8, justifyContent: 'center' }]}>
+                  <Text>{newFeed.unit}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Supplier</Text>
+              <TextInput
+                style={styles.input}
+                value={newFeed.supplier}
+                onChangeText={(text) => setNewFeed({...newFeed, supplier: text})}
+                placeholder="e.g., AgroFeeds Ltd"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Status</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['In Stock', 'Low Stock', 'Out of Stock'].map((status) => (
+                  <TouchableOpacity 
+                    key={status}
+                    style={[
+                      styles.radioButton, 
+                      newFeed.status === status && styles.radioButtonSelected,
+                      { 
+                        marginRight: 8, 
+                        marginBottom: 8,
+                        borderColor: 
+                          status === 'In Stock' ? Colors.success[400] :
+                          status === 'Low Stock' ? Colors.warning[400] :
+                          Colors.error[400]
+                      }
+                    ]}
+                    onPress={() => setNewFeed({...newFeed, status})}
+                  >
+                    <Text>{status}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              variant="outline" 
+              onPress={() => setIsAddFeedModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onPress={handleAddFeed}
+              disabled={!newFeed.name || !newFeed.quantity || !newFeed.supplier}
+            >
+              Add Feed
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderAddWeightRecordModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isAddWeightRecordModalVisible}
+      onRequestClose={() => setIsAddWeightRecordModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { maxHeight: '80%', width: '90%' }]}>
+          <Text variant="h6" weight="bold" style={styles.modalTitle}>Add Weight Record</Text>
+          
+          <ScrollView 
+          >
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>ID</Text>
+              <TextInput
+                style={styles.input}
+                value={newWeightRecord.id}
+                onChangeText={(text) => setNewWeightRecord({...newWeightRecord, id: text})}
+                placeholder="e.g., B001"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Stock Type</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['Bull', 'Cow', 'Heifer', 'Steer'].map((type) => (
+                  <TouchableOpacity 
+                    key={type}
+                    style={[
+                      styles.radioButton, 
+                      newWeightRecord.stockType === type && styles.radioButtonSelected,
+                      { marginRight: 8, marginBottom: 8 }
+                    ]}
+                    onPress={() => setNewWeightRecord({...newWeightRecord, stockType: type})}
+                  >
+                    <Text>{type}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Age</Text>
+              <TextInput
+                style={styles.input}
+                value={newWeightRecord.age}
+                onChangeText={(text) => setNewWeightRecord({...newWeightRecord, age: text})}
+                placeholder="e.g., 2y 6m"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Monthly Weights (kg)</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                {['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].map((month) => (
+                  <View key={month} style={{ width: '30%', marginBottom: 12 }}>
+                    <Text variant="caption" style={[styles.label, { textTransform: 'capitalize' }]}>{month}</Text>
+                    <TextInput
+                      style={[styles.input, { textAlign: 'center' }]}
+                      value={newWeightRecord[month as keyof typeof newWeightRecord]}
+                      onChangeText={(text) => setNewWeightRecord({
+                        ...newWeightRecord, 
+                        [month]: text.replace(/[^0-9]/g, '') // Only allow numbers
+                      })}
+                      placeholder="0"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              variant="outline" 
+              onPress={() => setIsAddWeightRecordModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onPress={handleAddWeightRecord}
+              disabled={!newWeightRecord.id || !newWeightRecord.stockType || !newWeightRecord.age}
+            >
+              Add Record
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderAddTransactionModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isAddTransactionModalVisible}
+      onRequestClose={() => setIsAddTransactionModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text variant="h6" weight="bold" style={styles.modalTitle}>Add Sales/Purchase Record</Text>
+          
+          <ScrollView 
+          >
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Date</Text>
+              <TextInput
+                style={styles.input}
+                value={newTransaction.date}
+                onChangeText={(text) => setNewTransaction({...newTransaction, date: text})}
+                placeholder="YYYY-MM-DD"
+                keyboardType="numbers-and-punctuation"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Transaction Type</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['Sale', 'Purchase'].map((type) => (
+                  <TouchableOpacity 
+                    key={type}
+                    style={[
+                      styles.radioButton, 
+                      newTransaction.type === type && styles.radioButtonSelected,
+                      { marginRight: 8, marginBottom: 8 }
+                    ]}
+                    onPress={() => setNewTransaction({...newTransaction, type})}
+                  >
+                    <Text>{type}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, { height: 80 }, styles.textArea]}
+                value={newTransaction.description}
+                onChangeText={(text) => setNewTransaction({...newTransaction, description: text})}
+                placeholder="e.g., Sale of bull B023"
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>
+                {newTransaction.type === 'Sale' ? 'Sale Amount' : 'Purchase Amount'}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ marginRight: 8 }}>$</Text>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  value={newTransaction.amount}
+                  onChangeText={(text) => setNewTransaction({...newTransaction, amount: text})}
+                  placeholder="0.00"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              variant="outline" 
+              onPress={() => setIsAddTransactionModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onPress={handleAddTransaction}
+              disabled={!newTransaction.description || !newTransaction.amount}
+            >
+              Add Record
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderAddBreedingRecordModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isAddBreedingRecordModalVisible}
+      onRequestClose={() => setIsAddBreedingRecordModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text variant="h6" weight="bold" style={styles.modalTitle}>Add Bull Breeding Record</Text>
+          
+          <ScrollView 
+          >
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Date</Text>
+              <TextInput
+                style={styles.input}
+                value={newBreedingRecord.date}
+                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, date: text})}
+                placeholder="YYYY-MM-DD"
+                keyboardType="numbers-and-punctuation"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Age</Text>
+              <TextInput
+                style={styles.input}
+                value={newBreedingRecord.age}
+                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, age: text})}
+                placeholder="e.g., 2y 6m"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Physical Exam (PE)</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['Excellent', 'Good', 'Poor'].map((pe) => (
+                  <TouchableOpacity 
+                    key={pe}
+                    style={[
+                      styles.radioButton, 
+                      newBreedingRecord.pe === pe && styles.radioButtonSelected,
+                      { marginRight: 8, marginBottom: 8 }
+                    ]}
+                    onPress={() => setNewBreedingRecord({...newBreedingRecord, pe: pe as BullBreedingRecord['pe']})}
+                  >
+                    <Text>{pe}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Sperm Motility (%)</Text>
+              <TextInput
+                style={styles.input}
+                value={newBreedingRecord.spermMotility}
+                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, spermMotility: text})}
+                placeholder="e.g., 85"
+                keyboardType="numeric"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Sperm Morphology (%)</Text>
+              <TextInput
+                style={styles.input}
+                value={newBreedingRecord.spermMorphology}
+                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, spermMorphology: text})}
+                placeholder="e.g., 90"
+                keyboardType="numeric"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Scrotal Circumference (cm)</Text>
+              <TextInput
+                style={styles.input}
+                value={newBreedingRecord.scrotal}
+                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, scrotal: text})}
+                placeholder="e.g., 35.5"
+                keyboardType="numeric"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Libido</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['Excellent', 'Good', 'Poor'].map((libido) => (
+                  <TouchableOpacity 
+                    key={libido}
+                    style={[
+                      styles.radioButton, 
+                      newBreedingRecord.libido === libido && styles.radioButtonSelected,
+                      { marginRight: 8, marginBottom: 8 }
+                    ]}
+                    onPress={() => setNewBreedingRecord({...newBreedingRecord, libido: libido as BullBreedingRecord['libido']})}
+                  >
+                    <Text>{libido}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Score</Text>
+              <TextInput
+                style={styles.input}
+                value={newBreedingRecord.score}
+                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, score: text})}
+                placeholder="e.g., 85"
+                keyboardType="numeric"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Classification</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
+                {['SPB', 'USPB', 'CD'].map((classification) => (
+                  <TouchableOpacity 
+                    key={classification}
+                    style={[
+                      styles.radioButton, 
+                      newBreedingRecord.classification === classification && styles.radioButtonSelected,
+                      { marginRight: 8, marginBottom: 8 }
+                    ]}
+                    onPress={() => setNewBreedingRecord({...newBreedingRecord, classification: classification as BullBreedingRecord['classification']})}
+                  >
+                    <Text>{classification}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              variant="outline" 
+              onPress={() => setIsAddBreedingRecordModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onPress={handleAddBreedingRecord}
+              disabled={!newBreedingRecord.age || !newBreedingRecord.spermMotility || !newBreedingRecord.spermMorphology || !newBreedingRecord.scrotal || !newBreedingRecord.score}
+            >
+              Add Record
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   const renderAddAnimalModal = () => (
     <Modal
@@ -715,22 +1463,10 @@ function RegisterContent() {
         <View style={styles.modalContent}>
           <Text variant="h6" weight="bold" style={styles.modalTitle}>Add New Animal</Text>
           
-          <ScrollView 
-            style={styles.modalScrollView}
-            contentContainerStyle={styles.modalScrollViewContent}
+          <ScrollView
           >
             <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Unit No</Text>
-              <TextInput
-                style={styles.input}
-                value={newAnimal.unitNo}
-                onChangeText={(text) => setNewAnimal({...newAnimal, unitNo: text})}
-                placeholder="e.g., B001"
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Tag</Text>
+              <Text variant="body2" style={styles.label}>Tag *</Text>
               <TextInput
                 style={styles.input}
                 value={newAnimal.tag}
@@ -740,23 +1476,73 @@ function RegisterContent() {
             </View>
             
             <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Age</Text>
-              <TextInput
+              <Text variant="body2" style={styles.label}>Date of Birth *</Text>
+              <TouchableOpacity 
                 style={styles.input}
-                value={newAnimal.age}
-                onChangeText={(text) => setNewAnimal({...newAnimal, age: text})}
-                placeholder="e.g., 2y 3m"
-              />
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={newAnimal.dateOfBirth ? {} : {color: '#999'}}>
+                  {newAnimal.dateOfBirth || 'Select date'}
+                </Text>
+              </TouchableOpacity>
+              
+              {showDatePicker && (
+                <DateTimePicker
+                  textColor={Colors.neutral[800]}
+                  value={selectedDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, date) => {
+                    setShowDatePicker(Platform.OS === 'ios');
+                    if (date) {
+                      const formattedDate = date.toISOString().split('T')[0];
+                      setSelectedDate(date);
+                      setNewAnimal(prev => ({
+                        ...prev,
+                        dateOfBirth: formattedDate
+                      }));
+                      
+                      // Calculate age
+                      const today = new Date();
+                      let years = today.getFullYear() - date.getFullYear();
+                      let months = today.getMonth() - date.getMonth();
+                      if (months < 0 || (months === 0 && today.getDate() < date.getDate())) {
+                        years--;
+                        months += 12;
+                      }
+                      const ageText = years > 0 ? `${years}y ${months}m` : `${months}m`;
+                      setNewAnimal(prev => ({
+                        ...prev,
+                        age: ageText
+                      }));
+                    }
+                  }}
+                  maximumDate={new Date()}
+                />
+              )}
+              
+              {newAnimal.age ? (
+                <Text variant="caption" style={{marginTop: 4}}>Age: {newAnimal.age}</Text>
+              ) : null}
             </View>
             
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Breed</Text>
-              <TextInput
-                style={styles.input}
-                value={newAnimal.breed}
-                onChangeText={(text) => setNewAnimal({...newAnimal, breed: text})}
-                placeholder="e.g., Mashona"
-              />
+              <View style={styles.input}>
+                <Picker
+                  value={newAnimal.breed}
+                  onValueChange={(value) => setNewAnimal({...newAnimal, breed: value})}
+                  items={[
+                    { label: 'Select Breed', value: '' },
+                    { label: 'Angus', value: 'Angus' },
+                    { label: 'Brahman', value: 'Brahman' },
+                    { label: 'Hereford', value: 'Hereford' },
+                    { label: 'Mashona', value: 'Mashona' },
+                    { label: 'Tuli', value: 'Tuli' },
+                    { label: 'Other', value: 'Other' }
+                  ]}
+                />
+              </View>
             </View>
             
             <View style={styles.formGroup}>
@@ -779,22 +1565,37 @@ function RegisterContent() {
             
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Stock Type</Text>
-              <TextInput
-                style={styles.input}
-                value={newAnimal.stockType}
-                onChangeText={(text) => setNewAnimal({...newAnimal, stockType: text})}
-                placeholder="e.g., Bull, Cow, Heifer"
-              />
+              <View style={styles.input}>
+                <Picker
+                  value={newAnimal.stockType}
+                  onValueChange={(value) => setNewAnimal({...newAnimal, stockType: value})}
+                  items={[
+                    { label: 'Select Stock Type', value: '' },
+                    { label: 'Bull', value: 'Bull' },
+                    { label: 'Cow', value: 'Cow' },
+                    { label: 'Heifer', value: 'Heifer' },
+                    { label: 'Steer', value: 'Steer' },
+                    { label: 'Calf', value: 'Calf' }
+                  ]}
+                />
+              </View>
             </View>
             
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Source</Text>
-              <TextInput
-                style={styles.input}
-                value={newAnimal.source}
-                onChangeText={(text) => setNewAnimal({...newAnimal, source: text})}
-                placeholder="e.g., Born, Purchased"
-              />
+              <View style={styles.input}>
+                <Picker
+                  value={newAnimal.source}
+                  onValueChange={(value) => setNewAnimal({...newAnimal, source: value})}
+                  items={[
+                    { label: 'Select Source', value: '' },
+                    { label: 'Born on Farm', value: 'Born' },
+                    { label: 'Purchased', value: 'Purchased' },
+                    { label: 'Gift/Donation', value: 'Gift' },
+                    { label: 'Other', value: 'Other' }
+                  ]}
+                />
+              </View>
             </View>
           </ScrollView>
           
@@ -808,7 +1609,7 @@ function RegisterContent() {
             </Button>
             <Button 
               onPress={handleAddAnimal}
-              disabled={!newAnimal.unitNo || !newAnimal.tag}
+              disabled={!newAnimal.tag || !newAnimal.dateOfBirth}
             >
               Add Animal
             </Button>
@@ -817,6 +1618,425 @@ function RegisterContent() {
       </View>
     </Modal>
   );
+
+  const renderAddPregnancyModal = () => {
+    const handleAddPregnancyRecord = () => {
+      const newRecord: PregnancyCalvingRecord = {
+        ...newPregnancyRecord,
+        id: `P${(pregnancyCalvingRecords.length + 1).toString().padStart(3, '0')}`,
+        expectedCalvingDate: 'N/A',
+        expectedReturnToHeatDate: 'N/A',
+      };
+      setPregnancyCalvingRecords([...pregnancyCalvingRecords, newRecord]);
+      setNewPregnancyRecord({
+        cowEarTag: '',
+        bodyConditionScore: 3.0,
+        lastServiceDate: new Date().toISOString().split('T')[0],
+        firstTrimesterPD: 'Not Tested',
+        secondTrimesterPD: 'Not Tested',
+        thirdTrimesterPD: 'Not Tested',
+        gestationPeriod: 0,
+        averageBCS: 3.0,
+      });
+      setIsAddPregnancyModalVisible(false);
+    };
+
+    const renderRadioGroup = (
+      label: string,
+      value: string,
+      options: { label: string; value: string }[],
+      onChange: (value: string) => void
+    ) => (
+      <View style={styles.formGroup}>
+        <Text variant="body2" style={styles.label}>{label}</Text>
+        <View style={styles.radioGroup}>
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.radioButton,
+                value === option.value && styles.radioButtonSelected
+              ]}
+              onPress={() => onChange(option.value)}
+            >
+              <Text>{option.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+
+    const pdOptions = [
+      { label: 'Positive', value: 'Positive' },
+      { label: 'Negative', value: 'Negative' },
+      { label: 'Inconclusive', value: 'Inconclusive' },
+      { label: 'Not Tested', value: 'Not Tested' },
+    ];
+
+    return (
+      <Modal 
+        visible={isAddPregnancyModalVisible} 
+        onRequestClose={() => setIsAddPregnancyModalVisible(false)}
+        transparent
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text variant="h6" style={styles.modalTitle}>Add Pregnancy Diagnosis Record</Text>
+              <TouchableOpacity onPress={() => setIsAddPregnancyModalVisible(false)}>
+                <Text style={styles.closeButton}>×</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Cow Ear Tag *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newPregnancyRecord.cowEarTag}
+                  onChangeText={(text) => setNewPregnancyRecord({...newPregnancyRecord, cowEarTag: text})}
+                  placeholder="Enter ear tag number"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Body Condition Score (1-5) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newPregnancyRecord.bodyConditionScore.toString()}
+                  onChangeText={(text) => {
+                    const num = parseFloat(text);
+                    if (!isNaN(num) && num >= 1 && num <= 5) {
+                      setNewPregnancyRecord({...newPregnancyRecord, bodyConditionScore: num});
+                    }
+                  }}
+                  placeholder="Enter BCS (1-5)"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Last Service Date *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newPregnancyRecord.lastServiceDate}
+                  onChangeText={(text) => setNewPregnancyRecord({...newPregnancyRecord, lastServiceDate: text})}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+
+              {renderRadioGroup('1st Trimester PD', newPregnancyRecord.firstTrimesterPD, pdOptions, 
+                (value) => setNewPregnancyRecord({...newPregnancyRecord, firstTrimesterPD: value as any}))}
+              
+              {renderRadioGroup('2nd Trimester PD', newPregnancyRecord.secondTrimesterPD, pdOptions, 
+                (value) => setNewPregnancyRecord({...newPregnancyRecord, secondTrimesterPD: value as any}))}
+              
+              {renderRadioGroup('3rd Trimester PD', newPregnancyRecord.thirdTrimesterPD, pdOptions, 
+                (value) => setNewPregnancyRecord({...newPregnancyRecord, thirdTrimesterPD: value as any}))}
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Gestation Period (days)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newPregnancyRecord.gestationPeriod.toString()}
+                  onChangeText={(text) => {
+                    const num = parseInt(text, 10);
+                    if (!isNaN(num)) {
+                      setNewPregnancyRecord({...newPregnancyRecord, gestationPeriod: num});
+                    }
+                  }}
+                  placeholder="Enter gestation period in days"
+                  keyboardType="numeric"
+                />
+              </View>
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <Button 
+                variant="outline" 
+                onPress={() => setIsAddPregnancyModalVisible(false)}
+                style={styles.cancelButton}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onPress={handleAddPregnancyRecord}
+                disabled={!newPregnancyRecord.cowEarTag}
+              >
+                Add Record
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const handleAddHeatBreedingRecord = () => {
+    const newRecord = {
+      ...newHeatBreedingRecord,
+      id: `HB${(heatBreedingRecords.length + 1).toString().padStart(3, '0')}`,
+    };
+    setHeatBreedingRecords([...heatBreedingRecords, newRecord]);
+    setNewHeatBreedingRecord({
+      earTagNumber: '',
+      stockType: 'Cow',
+      bodyConditionScore: 3.0,
+      heatDetectionDate: new Date().toISOString().split('T')[0],
+      observer: '',
+      servicedDate: new Date().toISOString().split('T')[0],
+      breedingStatus: 'Bred',
+      breedingMethod: 'Natural',
+      aiTechnician: '',
+      sireId: '',
+      strawId: '',
+      semenViability: '',
+      returnToHeatDate1: '',
+      dateServed2: '',
+      breedingMethod2: 'Natural',
+      sireUsed2: '',
+      returnToHeatDate2: ''
+    });
+    setIsAddHeatBreedingModalVisible(false);
+  };
+
+  const renderAddHeatBreedingModal = () => {
+    const breedingStatusOptions = [
+      { label: 'Bred', value: 'Bred' },
+      { label: 'Confirmed Pregnant', value: 'Confirmed Pregnant' },
+      { label: 'Open', value: 'Open' },
+      { label: 'Not Bred', value: 'Not Bred' }
+    ];
+
+    const breedingMethodOptions = [
+      { label: 'Natural', value: 'Natural' },
+      { label: 'AI', value: 'AI' },
+      { label: 'ET', value: 'ET' }
+    ];
+
+    const renderRadioGroup = (
+      label: string,
+      value: string,
+      options: { label: string; value: string }[],
+      onChange: (value: string) => void
+    ) => (
+      <View style={styles.formGroup}>
+        <Text variant="body2" style={styles.label}>{label}</Text>
+        <View style={styles.radioGroup}>
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.radioButton,
+                value === option.value && styles.radioButtonSelected
+              ]}
+              onPress={() => onChange(option.value)}
+            >
+              <Text>{option.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+
+    return (
+      <Modal 
+        visible={isAddHeatBreedingModalVisible} 
+        onRequestClose={() => setIsAddHeatBreedingModalVisible(false)}
+        transparent
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text variant="h6" style={styles.modalTitle}>Add Heat Detection & Breeding Record</Text>
+              <TouchableOpacity onPress={() => setIsAddHeatBreedingModalVisible(false)}>
+                <Text style={styles.closeButton}>×</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Ear Tag Number *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.earTagNumber}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, earTagNumber: text})}
+                  placeholder="Enter ear tag number"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Stock Type</Text>
+                <Picker
+                  selectedValue={newHeatBreedingRecord.stockType}
+                  onValueChange={(value) => setNewHeatBreedingRecord({...newHeatBreedingRecord, stockType: value})}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Cow" value="Cow" />
+                  <Picker.Item label="Heifer" value="Heifer" />
+                  <Picker.Item label="Heifer Calf" value="Heifer Calf" />
+                </Picker>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Body Condition Score (1-5)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.bodyConditionScore.toString()}
+                  onChangeText={(text) => {
+                    const num = parseFloat(text);
+                    if (!isNaN(num) && num >= 1 && num <= 5) {
+                      setNewHeatBreedingRecord({...newHeatBreedingRecord, bodyConditionScore: num});
+                    }
+                  }}
+                  placeholder="Enter BCS (1-5)"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Heat Detection Date *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.heatDetectionDate}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, heatDetectionDate: text})}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Observer</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.observer}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, observer: text})}
+                  placeholder="Observer's name"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Serviced Date</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.servicedDate}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, servicedDate: text})}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+
+              {renderRadioGroup('Breeding Status', newHeatBreedingRecord.breedingStatus, breedingStatusOptions, 
+                (value) => setNewHeatBreedingRecord({...newHeatBreedingRecord, breedingStatus: value}))}
+              
+              {renderRadioGroup('Breeding Method', newHeatBreedingRecord.breedingMethod, breedingMethodOptions, 
+                (value) => setNewHeatBreedingRecord({...newHeatBreedingRecord, breedingMethod: value}))}
+
+              {newHeatBreedingRecord.breedingMethod === 'AI' && (
+                <>
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>AI Technician</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newHeatBreedingRecord.aiTechnician}
+                      onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, aiTechnician: text})}
+                      placeholder="AI Technician's name"
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Sire ID</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newHeatBreedingRecord.sireId}
+                      onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, sireId: text})}
+                      placeholder="Sire ID"
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Straw ID</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newHeatBreedingRecord.strawId}
+                      onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, strawId: text})}
+                      placeholder="Straw ID"
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Semen Viability (%)</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newHeatBreedingRecord.semenViability}
+                      onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, semenViability: text})}
+                      placeholder="Enter percentage"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </>
+              )}
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Return to Heat Date (1st)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.returnToHeatDate1}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, returnToHeatDate1: text})}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Date Served (2nd)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.dateServed2}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, dateServed2: text})}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+
+              {renderRadioGroup('Breeding Method (2nd)', newHeatBreedingRecord.breedingMethod2, breedingMethodOptions, 
+                (value) => setNewHeatBreedingRecord({...newHeatBreedingRecord, breedingMethod2: value}))}
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Sire Used (2nd)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.sireUsed2}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, sireUsed2: text})}
+                  placeholder="Sire ID for 2nd service"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Return to Heat Date (2nd)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newHeatBreedingRecord.returnToHeatDate2}
+                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, returnToHeatDate2: text})}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <Button 
+                variant="outline" 
+                onPress={() => setIsAddHeatBreedingModalVisible(false)}
+                style={styles.cancelButton}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onPress={handleAddHeatBreedingRecord}
+                disabled={!newHeatBreedingRecord.earTagNumber || !newHeatBreedingRecord.heatDetectionDate}
+              >
+                Add Record
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   return (
     <ScreenContainer>
@@ -908,7 +2128,7 @@ function RegisterContent() {
               />
             </View>
             <View style={styles.chart}>
-              <Text variant="subtitle1" weight="medium" style={styles.chartTitle}>Stock Type Breakdown</Text>
+              <Text variant="h6" weight="medium" style={styles.chartTitle}>Stock Type Breakdown</Text>
               <PieChart
                 data={stockTypeBreakdown}
                 height={200}
@@ -937,20 +2157,19 @@ function RegisterContent() {
         >
           <DataTable
             columns={[
-              { key: 'unitNo', title: 'Unit No', width: 80 },
-              { key: 'tag', title: 'Tag', width: 80 },
-              { key: 'age', title: 'Age', width: 80 },
-              { key: 'breed', title: 'Breed', width: 100 },
+              { key: 'tag', title: 'Tag', width: 100 },
+              { key: 'age', title: 'Age', width: 90 },
+              { key: 'breed', title: 'Breed', width: 120 },
               { 
                 key: 'sex', 
                 title: 'Sex', 
-                width: 80,
+                width: 90,
                 render: (value: string) => (
                   <Text color={value === 'Male' ? 'primary.500' : 'accent.500'}>{value}</Text>
                 )
               },
-              { key: 'stockType', title: 'Type', width: 100 },
-              { key: 'source', title: 'Source', width: 100 },
+              { key: 'stockType', title: 'Type', width: 120 },
+              { key: 'source', title: 'Source', width: 120 },
             ]}
             data={herdRegisterData}
           />
@@ -958,19 +2177,226 @@ function RegisterContent() {
         </Card>
 
         {/* Calf Register Section */}
-        <Card title="Calf Register" style={styles.card}>
+        <Card 
+          title="Calf Register" 
+          style={styles.card}
+          headerRight={
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text variant="body2" style={{ marginRight: 8, color: Colors.neutral[600] }}>
+                {getCalves().length} calves
+              </Text>
+            </View>
+          }
+        >
           <DataTable
             columns={[
-              { key: 'unit', title: 'Unit', width: 80 },
-              { key: 'calfId', title: 'Calf ID', width: 80 },
-              { key: 'age', title: 'Age', width: 60 },
-              { key: 'deliveryType', title: 'Delivery', width: 100 },
-              { key: 'observer', title: 'Observer', width: 100 },
-              { key: 'birthWeight', title: 'Weight', width: 80 },
-              { key: 'sex', title: 'Sex', width: 80 },
+              { 
+                key: 'tag', 
+                title: 'Calf ID', 
+                width: 120,
+                render: (value: string) => <Text>{value}</Text>
+              },
+              { 
+                key: 'sex', 
+                title: 'Sex', 
+                width: 70,
+                render: (value: string) => (
+                  <Text color={value === 'Male' ? 'primary.500' : 'accent.500'}>{value}</Text>
+                )
+              },
+              { 
+                key: 'age', 
+                title: 'Age', 
+                width: 70,
+                render: (value: string) => <Text>{value}</Text>
+              },
+              { 
+                key: 'weight', 
+                title: 'Weight', 
+                width: 90,
+                render: (value: any) => (
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {value ? (
+                      <Text>{value.weight} kg</Text>
+                    ) : (
+                      <Text style={{ color: Colors.neutral[400] }}>No data</Text>
+                    )}
+                  </View>
+                )
+              },
+              { 
+                key: 'breed', 
+                title: 'Breed', 
+                width: 100,
+                render: (value: string) => <Text>{value || '-'}</Text>
+              },
+              { 
+                key: 'source', 
+                title: 'Source', 
+                width: 90,
+                render: (value: string) => <Text>{value || '-'}</Text>
+              },
+              { 
+                key: 'observer', 
+                title: 'Observer', 
+                width: 200,
+                render: (value: string, row: any) => (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text>{value || '-'}</Text>
+                    <TouchableOpacity 
+                      onPress={() => handleEditCalf(row)}
+                      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                      style={{ padding: 4, marginLeft: 8 }}
+                    >
+                      <Text>✏️</Text>
+                    </TouchableOpacity>
+                  </View>
+                )
+              }
             ]}
-            data={calfRegisterData}
+            data={getCalves().map(calf => ({
+              ...calf,
+              weight: getCalfWeight(calf.tag)
+            }))}
+            emptyState={
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>No calves found</Text>
+                <Text style={[styles.emptyStateText, { color: Colors.neutral[500], marginTop: 4 }]}>
+                  Calves are automatically shown here when added to the herd register
+                </Text>
+              </View>
+            }
           />
+          
+          {/* Edit Calf Modal */}
+          <Modal
+            visible={isEditCalfModalVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setIsEditCalfModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={[styles.modalContent, { maxHeight: '80%', width: '90%' }]}>
+
+                <View style={styles.modalHeader}>
+                  <Text variant="h6" style={styles.modalTitle}>
+                    {editingCalf ? `Edit Calf ${editingCalf.tag}` : 'Edit Calf Details'}
+                  </Text>
+                  <TouchableOpacity onPress={() => setIsEditCalfModalVisible(false)}>
+                    <Text>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView 
+                >
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Calf ID</Text>
+                    <TextInput
+                      style={[styles.input, styles.disabledInput]}
+                      value={editingCalf?.tag || ''}
+                      editable={false}
+                      placeholder="Calf ID"
+                    />
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Birth Date</Text>
+                    <TextInput
+                      style={[styles.input, styles.disabledInput]}
+                      value={editingCalf?.dateOfBirth || ''}
+                      editable={false}
+                      placeholder="YYYY-MM-DD"
+                    />
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Breed</Text>
+                    <View style={[styles.input, styles.disabledInput]} pointerEvents="none">
+                      <Text>{editingCalf?.breed || '-'}</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Sex</Text>
+                    <View style={[styles.radioGroup, { opacity: 0.6 }]} pointerEvents="none">
+                      {['Male', 'Female'].map((sex) => (
+                        <View
+                          key={sex}
+                          style={[
+                            styles.radioButton,
+                            editingCalf?.sex === sex && styles.radioButtonSelected
+                          ]}
+                        >
+                          <Text>{sex}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Source</Text>
+                    <View style={[styles.input, styles.disabledInput]} pointerEvents="none">
+                      <Text>{editingCalf?.source || '-'}</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Observer *</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={editingCalf?.observer || ''}
+                      onChangeText={(text) => editingCalf && setEditingCalf({...editingCalf, observer: text})}
+                      placeholder="Observer's name"
+                      autoFocus={true}
+                    />
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Birth Weight (kg)</Text>
+                    <TextInput
+                      style={[styles.input, styles.disabledInput]}
+                      value={editingCalf?.birthWeight || ''}
+                      editable={false}
+                      placeholder="e.g. 35.5"
+                    />
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text variant="body2" style={styles.label}>Delivery Type</Text>
+                    <View style={[styles.radioGroup, { opacity: 0.6 }]} pointerEvents="none">
+                      {['Natural', 'Assisted', 'C-Section'].map((type) => (
+                        <View
+                          key={type}
+                          style={[
+                            styles.radioButton,
+                            editingCalf?.deliveryType === type && styles.radioButtonSelected
+                          ]}
+                        >
+                          <Text>{type}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </ScrollView>
+                
+                <View style={styles.modalFooter}>
+                  <Button 
+                    variant="outline" 
+                    onPress={() => setIsEditCalfModalVisible(false)}
+                    style={{ marginRight: 8 }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onPress={handleSaveCalf}
+                    disabled={!editingCalf?.tag}
+                  >
+                    Save Changes
+                  </Button>
+              </View>
+            </View>
+          </View>
+          </Modal>
         </Card>
 
         {/* Drug Register Section */}
@@ -1000,8 +2426,66 @@ function RegisterContent() {
                   <Text color={value === 'Yes' ? 'success.500' : 'error.500'}>{value}</Text>
                 )
               },
-              { key: 'withdrawalPeriod', title: 'Withdrawal', width: 100 },
-              { key: 'stock', title: 'Stock', width: 100 },
+              { key: 'withdrawalPeriod', title: 'Withdrawal', width: 120 },
+              { 
+                key: 'stockStatus', 
+                title: 'Stock Status', 
+                width: 120,
+                render: (value: string) => (
+                  <View style={{ 
+                    padding: 4, 
+                    borderRadius: 4, 
+                    backgroundColor: 
+                      value === 'In Stock' ? 'rgba(34, 197, 94, 0.1)' :
+                      value === 'Low Stock' ? 'rgba(234, 179, 8, 0.1)' :
+                      'rgba(239, 68, 68, 0.1)'
+                  }}>
+                    <Text 
+                      color={
+                        value === 'In Stock' ? 'success.600' :
+                        value === 'Low Stock' ? 'warning.600' :
+                        'error.600'
+                      }
+                      style={{ textAlign: 'center' }}
+                    >
+                      {value}
+                    </Text>
+                  </View>
+                )
+              },
+              {
+                key: 'actions',
+                title: 'Actions',
+                width: 200,
+                render: (_, row) => (
+                    <Picker
+                      value=""
+                      onValueChange={(value) => {
+                        if (value === 'delete') {
+                          setDrugRegisterData(drugRegisterData.filter(drug => drug.id !== row.id));
+                        } else if (value) {
+                          setDrugRegisterData(drugRegisterData.map(drug => 
+                            drug.id === row.id ? { ...drug, stockStatus: value } : drug
+                          ));
+                        }
+                      }}
+                      items={[
+                        { label: 'Update Status', value: '' },
+                        { label: 'In Stock', value: 'In Stock' },
+                        { label: 'Running Low', value: 'Low Stock' },
+                        { label: 'Out of Stock', value: 'Out of Stock' },
+                        { label: 'Delete Drug', value: 'delete', style: { color: Colors.error[500] } }
+                      ]}
+                      style={{ 
+                        borderRadius: 6,
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        minWidth: 120
+                      }}
+                      textStyle={{ fontSize: 14 }}
+                    />
+                )
+              },
             ]}
             data={drugRegisterData}
           />
@@ -1017,12 +2501,33 @@ function RegisterContent() {
               { key: 'cause', title: 'Cause', width: 100 },
               { key: 'description', title: 'Description', width: 200 },
             ]}
-            data={mortalityData}
+            data={getCalves().map(calf => ({
+              ...calf,
+              weight: getCalfWeight(calf.tag)
+            }))}
+            emptyState={
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>No calves found</Text>
+                <Text style={[styles.emptyStateText, { color: Colors.neutral[500], marginTop: 4 }]}>
+                  Calves are automatically shown here when added to the herd register
+                </Text>
+              </View>
+            }
           />
         </Card>
 
-        {/* Animal Health Records Section */}
-        <Card title="Animal Health Records" style={styles.card}>
+        {/* Edit Calf Modal */}
+        <Modal
+          visible={isEditCalfModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsEditCalfModalVisible(false)}
+          headerRight={
+            <Button size="sm" onPress={() => setIsAddHealthRecordModalVisible(true)} style={styles.addButton}>
+              + Add Record
+            </Button>
+          }
+        >
           <DataTable
             columns={[
               { key: 'date', title: 'Date', width: 100 },
@@ -1054,12 +2559,25 @@ function RegisterContent() {
                 )
               },
             ]}
-            data={animalHealthRecords}
+            data={healthRecords}
           />
-        </Card>
+          {renderAddHealthRecordModal()}
+        </Modal>
 
         {/* Bull Breeding Soundness Section */}
-        <Card title="Bull Breeding Soundness" style={styles.card}>
+        <Card 
+          title="Bull Breeding Soundness" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddBreedingRecordModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
           <DataTable
             columns={[
               { key: 'date', title: 'Date', width: 80 },
@@ -1079,7 +2597,7 @@ function RegisterContent() {
                 )
               },
               { key: 'spermMotility', title: 'Sperm Motility', width: 100 },
-              { key: 'spermMorphology', title: 'Sperm Morphology', width: 100 },
+              { key: 'spermMorphology', title: 'Sperm Morphology', width: 150 },
               { key: 'scrotal', title: 'Scrotal (cm)', width: 90 },
               { 
                 key: 'libido', 
@@ -1098,7 +2616,7 @@ function RegisterContent() {
               { 
                 key: 'classification', 
                 title: 'Classification', 
-                width: 80,
+                width: 210,
                 render: (value: string) => (
                   <Text color={
                     value === 'SPB' ? 'success.500' : 
@@ -1109,12 +2627,25 @@ function RegisterContent() {
                 )
               },
             ]}
-            data={bullBreedingSoundnessData}
+            data={breedingRecords}
           />
+          {renderAddBreedingRecordModal()}
         </Card>
 
         {/* Sales & Purchases Section */}
-        <Card title="Sales & Purchases" style={styles.card}>
+        <Card 
+          title="Sales & Purchases" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddTransactionModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
           <DataTable
             columns={[
               { key: 'date', title: 'Date', width: 100 },
@@ -1131,12 +2662,25 @@ function RegisterContent() {
               },
               { key: 'type', title: 'Type', width: 100 },
             ]}
-            data={transactionData}
+            data={transactions}
           />
+          {renderAddTransactionModal()}
         </Card>
 
         {/* Weight Record Section */}
-        <Card title="Weight Record" style={styles.card}>
+        <Card 
+          title="Weight Record" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddWeightRecordModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <DataTable
               columns={[
@@ -1156,13 +2700,26 @@ function RegisterContent() {
                 { key: 'nov', title: 'Nov', width: 70 },
                 { key: 'dec', title: 'Dec', width: 70 },
               ]}
-              data={weightData}
+              data={weightRecords}
             />
           </ScrollView>
+          {renderAddWeightRecordModal()}
         </Card>
 
         {/* Feed Inventory Section */}
-        <Card title="Feed Inventory" style={styles.card}>
+        <Card 
+          title="Feed Inventory" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddFeedModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Feed
+            </Button>
+          }
+        >
           <DataTable
             columns={[
               { key: 'id', title: 'ID', width: 70 },
@@ -1184,7 +2741,7 @@ function RegisterContent() {
               { 
                 key: 'status', 
                 title: 'Status', 
-                width: 90,
+                width: 150,
                 render: (value: string) => (
                   <View 
                     style={[
@@ -1202,13 +2759,12 @@ function RegisterContent() {
                     ]}
                   >
                     <Text 
-                      variant="caption" 
-                      weight="medium"
                       color={
                         value === 'In Stock' ? 'success.600' :
                         value === 'Low Stock' ? 'warning.600' :
                         'error.600'
                       }
+                      style={{ fontSize: 12, fontWeight: '500' }}
                     >
                       {value}
                     </Text>
@@ -1216,12 +2772,25 @@ function RegisterContent() {
                 )
               },
             ]}
-            data={feedInventoryData}
+            data={feedInventory}
           />
+          {renderAddFeedModal()}
         </Card>
 
         {/* Pregnancy Diagnosis and Calving Section */}
-        <Card title="Pregnancy Diagnosis and Calving" style={styles.card}>
+        <Card 
+          title="Pregnancy & Calving" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddPregnancyModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
           <ScrollView horizontal showsHorizontalScrollIndicator={true}>
             <DataTable
               columns={[
@@ -1295,10 +2864,23 @@ function RegisterContent() {
               data={pregnancyCalvingRecords}
             />
           </ScrollView>
+          {renderAddPregnancyModal()}
         </Card>
 
         {/* Heat Detection and Breeding Section */}
-        <Card title="Heat Detection and Breeding" style={styles.card}>
+        <Card 
+          title="Heat & Breeding" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddHeatBreedingModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
           <ScrollView horizontal showsHorizontalScrollIndicator={true}>
             <DataTable
               columns={[
@@ -1350,11 +2932,12 @@ function RegisterContent() {
                 { key: 'dateServed2', title: 'Date Served 2', width: 100 },
                 { key: 'breedingMethod2', title: 'Method 2', width: 90 },
                 { key: 'sireUsed2', title: 'Sire Used 2', width: 100 },
-                { key: 'returnToHeatDate2', title: 'Return to Heat 2', width: 110 },
+                { key: 'returnToHeatDate2', title: 'Return to Heat 2', width: 200 },
               ]}
               data={heatBreedingRecords}
             />
           </ScrollView>
+          {renderAddHeatBreedingModal()}
         </Card>
       </ScrollView>
     </ScreenContainer>
@@ -1379,7 +2962,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   modalScrollView: {
-    flex: 1,
     marginBottom: 16,
   },
   modalScrollViewContent: {
@@ -1479,4 +3061,50 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  emptyState: {
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    textAlign: 'center',
+    color: Colors.neutral[600],
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral[200],
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: Colors.neutral[200],
+  },
+  incompleteIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.warning[500],
+    marginLeft: 4,
+  },
+  editButton: {
+    padding: 4,
+  },
+  disabledInput: {
+    opacity: 0.6,
+    backgroundColor: Colors.neutral[100],
+    color: Colors.neutral[600],
+    cursor: 'not-allowed',
+  },
+  disabledInputText: {
+    color: Colors.neutral[600],
+  },
+  
 });
