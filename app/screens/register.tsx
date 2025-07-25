@@ -191,18 +191,18 @@ interface HeatBreedingRecord {
 interface PregnancyCalvingRecord {
   id: string;
   cowEarTag: string;
-  bodyConditionScore: number;
+  bodyConditionScore: string;
   lastServiceDate: string;
   firstTrimesterPD: 'Positive' | 'Negative' | 'Inconclusive' | 'Not Tested';
   secondTrimesterPD: 'Positive' | 'Negative' | 'Inconclusive' | 'Not Tested';
   thirdTrimesterPD: 'Positive' | 'Negative' | 'Inconclusive' | 'Not Tested';
-  gestationPeriod: number; // in days
+  gestationPeriod: string; // in days
   expectedCalvingDate: string;
   actualCalvingDate?: string;
   calfId?: string;
   calfSex?: 'Male' | 'Female';
   deliveryType?: 'Natural' | 'Assisted' | 'C-Section';
-  averageBCS: number;
+  averageBCS: string;
   expectedReturnToHeatDate: string;
   actualFirstHeatDate?: string;
   expectedSecondHeatDate?: string;
@@ -452,6 +452,19 @@ function RegisterContent() {
   // Drug register state
   const [drugRegisterData, setDrugRegisterData] = useState<DrugData[]>(initialDrugRegisterData);
   const [isAddDrugModalVisible, setIsAddDrugModalVisible] = useState(false);
+  
+  // Cull & Mortalities state
+  const [mortalityData, setMortalityData] = useState([
+    { id: '1', date: '2025-07-20', animalId: 'C001', cause: 'Disease', description: 'Respiratory infection' },
+    { id: '2', date: '2025-07-18', animalId: 'B012', cause: 'Injury', description: 'Broken leg' },
+  ]);
+  const [isAddMortalityModalVisible, setIsAddMortalityModalVisible] = useState(false);
+  const [newMortality, setNewMortality] = useState({
+    date: new Date().toISOString().split('T')[0],
+    animalId: '',
+    cause: '',
+    description: ''
+  });
   const [newDrug, setNewDrug] = useState<Omit<DrugData, 'id'>>({ 
     drugClass: '',
     type: '',
@@ -474,6 +487,98 @@ function RegisterContent() {
     });
     setIsAddDrugModalVisible(false);
   };
+  
+  const handleAddMortality = () => {
+    const newId = (mortalityData.length + 1).toString();
+    setMortalityData([...mortalityData, { ...newMortality, id: newId }]);
+    setNewMortality({
+      date: new Date().toISOString().split('T')[0],
+      animalId: '',
+      cause: '',
+      description: ''
+    });
+    setIsAddMortalityModalVisible(false);
+  };
+
+  const renderAddMortalityModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isAddMortalityModalVisible}
+      onRequestClose={() => setIsAddMortalityModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text variant="h6" weight="bold" style={styles.modalTitle}>Add Mortality Record</Text>
+          
+          <ScrollView>
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Date</Text>
+              <TextInput
+                style={styles.input}
+                value={newMortality.date}
+                onChangeText={(text) => setNewMortality({...newMortality, date: text})}
+                placeholder="YYYY-MM-DD"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Picker
+                label="Select Animal"
+                value={newMortality.animalId}
+                onValueChange={(value) => setNewMortality({...newMortality, animalId: value})}
+                items={[
+                  { label: 'Select an animal...', value: '' },
+                  ...herdRegisterData.map(animal => ({
+                    label: `${animal.tag} (${animal.breed} ${animal.stockType})`,
+                    value: animal.tag
+                  }))
+                ]}
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Cause</Text>
+              <TextInput
+                style={styles.input}
+                value={newMortality.cause}
+                onChangeText={(text) => setNewMortality({...newMortality, cause: text})}
+                placeholder="e.g., Disease, Injury"
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                value={newMortality.description}
+                onChangeText={(text) => setNewMortality({...newMortality, description: text})}
+                placeholder="Enter description"
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalButtons}>
+            <Button 
+              variant="outline" 
+              onPress={() => setIsAddMortalityModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onPress={handleAddMortality}
+              disabled={!newMortality.animalId || !newMortality.cause}
+            >
+              Add Record
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   const renderAddDrugModal = () => (
     <Modal
@@ -588,9 +693,14 @@ function RegisterContent() {
   const [isAddWeightRecordModalVisible, setIsAddWeightRecordModalVisible] = useState(false);
   const [isAddPregnancyModalVisible, setIsAddPregnancyModalVisible] = useState(false);
   const [isAddHeatBreedingModalVisible, setIsAddHeatBreedingModalVisible] = useState(false);
-  const [herdRegisterData, setHerdRegisterData] = useState<AnimalData[]>(initialHerdRegisterData);
+  const [herdRegisterData, setHerdRegisterData] = useState<AnimalData[]>([
+    ...initialHerdRegisterData,
+    { id: '3', unitNo: 'H078', tag: 'TAG789', age: '1y 3m', breed: 'Angus', sex: 'Female', stockType: 'Heifer', source: 'Born' },
+    { id: '4', unitNo: 'S123', tag: 'TAG101', age: '2y 0m', breed: 'Hereford', sex: 'Male', stockType: 'Steer', source: 'Purchased' },
+    { id: '5', unitNo: 'C102', tag: 'TAG202', age: '4y 6m', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
+  ]);
   const [pregnancyCalvingRecords, setPregnancyCalvingRecords] = useState<PregnancyCalvingRecord[]>(pregnancyCalvingData);
-  const [newPregnancyRecord, setNewPregnancyRecord] = useState<Omit<PregnancyCalvingRecord, 'id' | 'expectedCalvingDate' | 'expectedReturnToHeatDate'>>({
+  const [newPregnancyRecord, setNewPregnancyRecord] = useState<Omit<PregnancyCalvingRecord, 'id' | 'expectedReturnToHeatDate'>>({
     cowEarTag: '',
     bodyConditionScore: 3.0,
     lastServiceDate: new Date().toISOString().split('T')[0],
@@ -598,6 +708,8 @@ function RegisterContent() {
     secondTrimesterPD: 'Not Tested',
     thirdTrimesterPD: 'Not Tested',
     gestationPeriod: 0,
+    expectedCalvingDate: '',
+    actualCalvingDate: '',
     averageBCS: 3.0,
   });
   const [healthRecords, setHealthRecords] = useState<AnimalHealthRecord[]>(animalHealthRecords);
@@ -617,7 +729,18 @@ function RegisterContent() {
     birthWeight: '',
     deliveryType: 'Natural'
   });
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState({
+    lastServiceDate: false,
+    expectedCalvingDate: false,
+    actualCalvingDate: false
+  });
+  
+  const toggleDatePicker = (field: 'lastServiceDate' | 'expectedCalvingDate' | 'actualCalvingDate') => {
+    setShowDatePicker(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [newHealthRecord, setNewHealthRecord] = useState<Omit<AnimalHealthRecord, 'id'>>({
     animalId: '',
@@ -1623,20 +1746,19 @@ function RegisterContent() {
     const handleAddPregnancyRecord = () => {
       const newRecord: PregnancyCalvingRecord = {
         ...newPregnancyRecord,
-        id: `P${(pregnancyCalvingRecords.length + 1).toString().padStart(3, '0')}`,
-        expectedCalvingDate: 'N/A',
-        expectedReturnToHeatDate: 'N/A',
+        id: `P${(pregnancyCalvingRecords.length + 1).toString().padStart(3, '0')}` // Use the BCS from the form with fallback
       };
+      console.log("here is are the logs for the newrecord:",newRecord)
       setPregnancyCalvingRecords([...pregnancyCalvingRecords, newRecord]);
       setNewPregnancyRecord({
         cowEarTag: '',
-        bodyConditionScore: 3.0,
+        bodyConditionScore: '3.0',
         lastServiceDate: new Date().toISOString().split('T')[0],
         firstTrimesterPD: 'Not Tested',
         secondTrimesterPD: 'Not Tested',
         thirdTrimesterPD: 'Not Tested',
-        gestationPeriod: 0,
-        averageBCS: 3.0,
+        gestationPeriod: '',
+        averageBCS: '3.0',
       });
       setIsAddPregnancyModalVisible(false);
     };
@@ -1671,7 +1793,9 @@ function RegisterContent() {
       { label: 'Negative', value: 'Negative' },
       { label: 'Inconclusive', value: 'Inconclusive' },
       { label: 'Not Tested', value: 'Not Tested' },
-    ];
+    ] as const;
+
+    type PDValue = typeof pdOptions[number]['value'];
 
     return (
       <Modal 
@@ -1690,12 +1814,19 @@ function RegisterContent() {
             </View>
             <ScrollView style={styles.modalBody}>
               <View style={styles.formGroup}>
-                <Text variant="body2" style={styles.label}>Cow Ear Tag *</Text>
-                <TextInput
-                  style={styles.input}
+                <Picker
+                  label="Select Cow*"
                   value={newPregnancyRecord.cowEarTag}
-                  onChangeText={(text) => setNewPregnancyRecord({...newPregnancyRecord, cowEarTag: text})}
-                  placeholder="Enter ear tag number"
+                  onValueChange={(value) => setNewPregnancyRecord({...newPregnancyRecord, cowEarTag: value})}
+                  items={[
+                    { label: 'Select a cow...', value: '' },
+                    ...herdRegisterData
+                      .filter(animal => animal.sex === 'Female' && ['Cow', 'Heifer', 'Heifer (First Calf)'].includes(animal.stockType))
+                      .map(animal => ({
+                        label: `${animal.tag} (${animal.breed} ${animal.stockType})`,
+                        value: animal.tag
+                      }))
+                  ]}
                 />
               </View>
 
@@ -1703,11 +1834,14 @@ function RegisterContent() {
                 <Text variant="body2" style={styles.label}>Body Condition Score (1-5) *</Text>
                 <TextInput
                   style={styles.input}
-                  value={newPregnancyRecord.bodyConditionScore.toString()}
+                  value={newPregnancyRecord.bodyConditionScore}
                   onChangeText={(text) => {
-                    const num = parseFloat(text);
-                    if (!isNaN(num) && num >= 1 && num <= 5) {
-                      setNewPregnancyRecord({...newPregnancyRecord, bodyConditionScore: num});
+                    // Allow empty string, decimal point, and numbers
+                    if (text === '' || /^\d*\.?\d*$/.test(text)) {
+                      const num = parseFloat(text);
+                      if (text === '' || (!isNaN(num) && num >= 1 && num <= 5)) {
+                        setNewPregnancyRecord({...newPregnancyRecord, bodyConditionScore: text});
+                      }
                     }
                   }}
                   placeholder="Enter BCS (1-5)"
@@ -1717,37 +1851,158 @@ function RegisterContent() {
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Last Service Date *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newPregnancyRecord.lastServiceDate}
-                  onChangeText={(text) => setNewPregnancyRecord({...newPregnancyRecord, lastServiceDate: text})}
-                  placeholder="YYYY-MM-DD"
-                />
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => toggleDatePicker('lastServiceDate')}
+                >
+                  <Text>{newPregnancyRecord.lastServiceDate || 'Select date'}</Text>
+                </TouchableOpacity>
+                {showDatePicker.lastServiceDate && (
+                  <DateTimePicker
+                    value={new Date(newPregnancyRecord.lastServiceDate) || new Date()}
+                    mode="date"
+                    textColor='black'
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        const formattedDate = selectedDate.toISOString().split('T')[0];
+                        setNewPregnancyRecord({
+                          ...newPregnancyRecord,
+                          lastServiceDate: formattedDate
+                        });
+                        // Recalculate expected calving date if gestation period is set
+                        if (newPregnancyRecord.gestationPeriod > 0) {
+                          const expectedDate = new Date(selectedDate);
+                          expectedDate.setDate(selectedDate.getDate() + newPregnancyRecord.gestationPeriod);
+                          setNewPregnancyRecord(prev => ({
+                            ...prev,
+                            expectedCalvingDate: expectedDate.toISOString().split('T')[0]
+                          }));
+                        }
+                      }
+                      toggleDatePicker('lastServiceDate');
+                    }}
+                  />
+                )}
               </View>
 
-              {renderRadioGroup('1st Trimester PD', newPregnancyRecord.firstTrimesterPD, pdOptions, 
-                (value) => setNewPregnancyRecord({...newPregnancyRecord, firstTrimesterPD: value as any}))}
+              <View style={styles.formGroup}>
+                <Picker
+                  label="1st Trimester PD"
+                  value={newPregnancyRecord.firstTrimesterPD}
+                  onValueChange={(value) => 
+                    setNewPregnancyRecord({...newPregnancyRecord, firstTrimesterPD: value as PDValue})
+                  }
+                  items={pdOptions}
+                />
+              </View>
               
-              {renderRadioGroup('2nd Trimester PD', newPregnancyRecord.secondTrimesterPD, pdOptions, 
-                (value) => setNewPregnancyRecord({...newPregnancyRecord, secondTrimesterPD: value as any}))}
+              <View style={styles.formGroup}>
+                <Picker
+                  label="2nd Trimester PD"
+                  value={newPregnancyRecord.secondTrimesterPD}
+                  onValueChange={(value) => 
+                    setNewPregnancyRecord({...newPregnancyRecord, secondTrimesterPD: value as PDValue})
+                  }
+                  items={pdOptions}
+                />
+              </View>
               
-              {renderRadioGroup('3rd Trimester PD', newPregnancyRecord.thirdTrimesterPD, pdOptions, 
-                (value) => setNewPregnancyRecord({...newPregnancyRecord, thirdTrimesterPD: value as any}))}
+              <View style={styles.formGroup}>
+                <Picker
+                  label="3rd Trimester PD"
+                  value={newPregnancyRecord.thirdTrimesterPD}
+                  onValueChange={(value) => 
+                    setNewPregnancyRecord({...newPregnancyRecord, thirdTrimesterPD: value as PDValue})
+                  }
+                  items={pdOptions}
+                />
+              </View>
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Gestation Period (days)</Text>
                 <TextInput
                   style={styles.input}
-                  value={newPregnancyRecord.gestationPeriod.toString()}
+                  value={newPregnancyRecord.gestationPeriod}
                   onChangeText={(text) => {
-                    const num = parseInt(text, 10);
-                    if (!isNaN(num)) {
-                      setNewPregnancyRecord({...newPregnancyRecord, gestationPeriod: num});
+                    // Allow only numbers
+                    if (text === '' || /^\d+$/.test(text)) {
+                      setNewPregnancyRecord(prev => {
+                        const updated = {...prev, gestationPeriod: text};
+                        // Only calculate expected date if we have a valid number
+                        if (text) {
+                          const num = parseInt(text, 10);
+                          if (!isNaN(num)) {
+                            const lastServiceDate = new Date(prev.lastServiceDate);
+                            const expectedDate = new Date(lastServiceDate);
+                            expectedDate.setDate(lastServiceDate.getDate() + num);
+                            updated.expectedCalvingDate = expectedDate.toISOString().split('T')[0];
+                          }
+                        } else {
+                          updated.expectedCalvingDate = 'N/A';
+                        }
+                        return updated;
+                      });
                     }
                   }}
                   placeholder="Enter gestation period in days"
                   keyboardType="numeric"
                 />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Expected Calving Date</Text>
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => toggleDatePicker('expectedCalvingDate')}
+                >
+                  <Text>{newPregnancyRecord.expectedCalvingDate || 'Select date'}</Text>
+                </TouchableOpacity>
+                {showDatePicker.expectedCalvingDate && (
+                  <DateTimePicker
+                    value={newPregnancyRecord.expectedCalvingDate ? new Date(newPregnancyRecord.expectedCalvingDate) : new Date()}
+                    mode="date"
+                    textColor='black'
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setNewPregnancyRecord({
+                          ...newPregnancyRecord,
+                          expectedCalvingDate: selectedDate.toISOString().split('T')[0]
+                        });
+                      }
+                      toggleDatePicker('expectedCalvingDate');
+                      console.log("here is are the logs for the newrecord for the part expectedCalvingDate:",newPregnancyRecord)
+                    }}
+                  />
+                )}
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text variant="body2" style={styles.label}>Actual Calving Date (if applicable)</Text>
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => toggleDatePicker('actualCalvingDate')}
+                >
+                  <Text>{newPregnancyRecord.actualCalvingDate || 'Select date'}</Text>
+                </TouchableOpacity>
+                {showDatePicker.actualCalvingDate && (
+                  <DateTimePicker
+                    value={newPregnancyRecord.actualCalvingDate ? new Date(newPregnancyRecord.actualCalvingDate) : new Date()}
+                    mode="date"
+                    textColor='black'
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setNewPregnancyRecord({
+                          ...newPregnancyRecord,
+                          actualCalvingDate: selectedDate.toISOString().split('T')[0]
+                        });
+                      }
+                      toggleDatePicker('actualCalvingDate');
+                    }}
+                  />
+                )}
               </View>
             </ScrollView>
             <View style={styles.modalFooter}>
@@ -2493,27 +2748,56 @@ function RegisterContent() {
         </Card>
 
         {/* Cull & Mortalities Section */}
-        <Card title="Cull & Mortalities" style={styles.card}>
+        <Card 
+          title="Cull & Mortalities" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddMortalityModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
           <DataTable
             columns={[
-              { key: 'id', title: 'ID', width: 100 },
+              { key: 'id', title: 'ID', width: 60 },
               { key: 'date', title: 'Date', width: 100 },
-              { key: 'cause', title: 'Cause', width: 100 },
-              { key: 'description', title: 'Description', width: 200 },
+              { key: 'animalId', title: 'Animal ID', width: 100 },
+              { 
+                key: 'cause', 
+                title: 'Cause', 
+                width: 120,
+                render: (value: string) => (
+                  <Text style={{ color: value === 'Disease' ? Colors.error[500] : Colors.warning[600] }}>
+                    {value}
+                  </Text>
+                )
+              },
+              { 
+                key: 'description', 
+                title: 'Description', 
+                width: 200,
+                render: (value: string) => (
+                  <Text numberOfLines={1} ellipsizeMode="tail">
+                    {value}
+                  </Text>
+                )
+              },
             ]}
-            data={getCalves().map(calf => ({
-              ...calf,
-              weight: getCalfWeight(calf.tag)
-            }))}
+            data={mortalityData}
             emptyState={
               <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No calves found</Text>
+                <Text style={styles.emptyStateText}>No mortality records found</Text>
                 <Text style={[styles.emptyStateText, { color: Colors.neutral[500], marginTop: 4 }]}>
-                  Calves are automatically shown here when added to the herd register
+                  Click 'Add Record' to add a new mortality record
                 </Text>
               </View>
             }
           />
+          {renderAddMortalityModal()}
         </Card>
 
         {/* Edit Calf Modal */}
@@ -2795,7 +3079,7 @@ function RegisterContent() {
             <DataTable
               columns={[
                 { key: 'cowEarTag', title: 'Cow Ear Tag', width: 100 },
-                { key: 'bodyConditionScore', title: 'BCS', width: 70, render: (value: number) => value.toFixed(1) },
+                { key: 'bodyConditionScore', title: 'BCS', width: 70 },
                 { key: 'lastServiceDate', title: 'Last Service', width: 100 },
                 { 
                   key: 'firstTrimesterPD', 
@@ -2840,26 +3124,8 @@ function RegisterContent() {
                   )
                 },
                 { key: 'gestationPeriod', title: 'Gestation (days)', width: 100 },
-                { key: 'expectedCalvingDate', title: 'Exp. Calving', width: 100 },
-                { key: 'actualCalvingDate', title: 'Actual Calving', width: 100 },
-                { key: 'calfId', title: 'Calf ID', width: 90 },
-                { 
-                  key: 'calfSex', 
-                  title: 'Calf Sex', 
-                  width: 80,
-                  render: (value: string) => (
-                    <Text color={value === 'Female' ? 'accent.500' : 'primary.500'}>
-                      {value}
-                    </Text>
-                  )
-                },
-                { key: 'deliveryType', title: 'Delivery Type', width: 100 },
-                { key: 'averageBCS', title: 'Avg BCS', width: 80, render: (value: number) => value?.toFixed(1) },
-                { key: 'expectedReturnToHeatDate', title: 'Exp. 1st Heat', width: 100 },
-                { key: 'actualFirstHeatDate', title: 'Actual 1st Heat', width: 100 },
-                { key: 'expectedSecondHeatDate', title: 'Exp. 2nd Heat', width: 100 },
-                { key: 'actualSecondHeatDate', title: 'Actual 2nd Heat', width: 100 },
-                { key: 'expectedSecondReturnToHeatDate', title: 'Exp. 2nd Return', width: 110 },
+                { key: 'expectedCalvingDate', title: 'Exp. Calving', width: 150 },
+                { key: 'actualCalvingDate', title: 'Actual Calving', width: 200 },
               ]}
               data={pregnancyCalvingRecords}
             />
@@ -2981,9 +3247,22 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: Colors.neutral[300],
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 16,
+    borderRadius: 4,
+    padding: 12,
+    fontSize: 14,
+    color: Colors.neutral[900],
+    backgroundColor: Colors.white,
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: Colors.neutral[300],
+    borderRadius: 4,
+    padding: 12,
+    fontSize: 14,
+    color: Colors.neutral[900],
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    minHeight: 44,
   },
   radioGroup: {
     flexDirection: 'row',
