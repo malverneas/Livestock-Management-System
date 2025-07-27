@@ -458,6 +458,35 @@ function RegisterContent() {
     { id: '1', date: '2025-07-20', animalId: 'C001', cause: 'Disease', description: 'Respiratory infection' },
     { id: '2', date: '2025-07-18', animalId: 'B012', cause: 'Injury', description: 'Broken leg' },
   ]);
+  
+  // Heat Detection & Breeding state
+  const [heatBreedingRecords, setHeatBreedingRecords] = useState<HeatBreedingRecord[]>([]);
+  const [isAddHeatBreedingModalVisible, setIsAddHeatBreedingModalVisible] = useState(false);
+  const [showHeatDatePicker, setShowHeatDatePicker] = useState(false);
+  const [showServicedDatePicker, setShowServicedDatePicker] = useState(false);
+  const [showReturnToHeatDatePicker, setShowReturnToHeatDatePicker] = useState(false);
+  const [showDateServed2Picker, setShowDateServed2Picker] = useState(false);
+  const [showReturnToHeat2DatePicker, setShowReturnToHeat2DatePicker] = useState(false);
+  const [currentDateField, setCurrentDateField] = useState<'heat' | 'serviced' | 'returnToHeat' | 'dateServed2' | 'returnToHeat2'>('heat');
+  const [newHeatBreedingRecord, setNewHeatBreedingRecord] = useState<Omit<HeatBreedingRecord, 'id'>>({
+    earTagNumber: '',
+    stockType: 'Cow',
+    bodyConditionScore: 3.0,
+    heatDetectionDate: new Date().toISOString().split('T')[0],
+    observer: '',
+    servicedDate: new Date().toISOString().split('T')[0],
+    breedingStatus: 'Bred',
+    breedingMethod: 'Natural',
+    aiTechnician: '',
+    sireId: '',
+    strawId: '',
+    semenViability: undefined,
+    returnToHeatDate1: '',
+    dateServed2: '',
+    breedingMethod2: 'Natural',
+    sireUsed2: '',
+    returnToHeatDate2: ''
+  });
   const [isAddMortalityModalVisible, setIsAddMortalityModalVisible] = useState(false);
   const [newMortality, setNewMortality] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -692,7 +721,6 @@ function RegisterContent() {
   const [isAddTransactionModalVisible, setIsAddTransactionModalVisible] = useState(false);
   const [isAddWeightRecordModalVisible, setIsAddWeightRecordModalVisible] = useState(false);
   const [isAddPregnancyModalVisible, setIsAddPregnancyModalVisible] = useState(false);
-  const [isAddHeatBreedingModalVisible, setIsAddHeatBreedingModalVisible] = useState(false);
   const [herdRegisterData, setHerdRegisterData] = useState<AnimalData[]>([
     ...initialHerdRegisterData,
     { id: '3', unitNo: 'H078', tag: 'TAG789', age: '1y 3m', breed: 'Angus', sex: 'Female', stockType: 'Heifer', source: 'Born' },
@@ -784,26 +812,6 @@ function RegisterContent() {
     oct: '',
     nov: '',
     dec: ''
-  });
-
-  const [newHeatBreedingRecord, setNewHeatBreedingRecord] = useState({
-    earTagNumber: '',
-    stockType: 'Cow',
-    bodyConditionScore: 3.0,
-    heatDetectionDate: new Date().toISOString().split('T')[0],
-    observer: '',
-    servicedDate: new Date().toISOString().split('T')[0],
-    breedingStatus: 'Bred',
-    breedingMethod: 'Natural',
-    aiTechnician: '',
-    sireId: '',
-    strawId: '',
-    semenViability: '',
-    returnToHeatDate1: '',
-    dateServed2: '',
-    breedingMethod2: 'Natural',
-    sireUsed2: '',
-    returnToHeatDate2: ''
   });
 
   const [isAddFeedModalVisible, setIsAddFeedModalVisible] = useState(false);
@@ -2027,11 +2035,19 @@ function RegisterContent() {
   };
 
   const handleAddHeatBreedingRecord = () => {
-    const newRecord = {
+    if (!newHeatBreedingRecord.earTagNumber || !newHeatBreedingRecord.heatDetectionDate) {
+      // Basic validation - ensure required fields are filled
+      return;
+    }
+
+    const newRecord: HeatBreedingRecord = {
       ...newHeatBreedingRecord,
       id: `HB${(heatBreedingRecords.length + 1).toString().padStart(3, '0')}`,
     };
+    
     setHeatBreedingRecords([...heatBreedingRecords, newRecord]);
+    
+    // Reset the form
     setNewHeatBreedingRecord({
       earTagNumber: '',
       stockType: 'Cow',
@@ -2044,13 +2060,14 @@ function RegisterContent() {
       aiTechnician: '',
       sireId: '',
       strawId: '',
-      semenViability: '',
+      semenViability: undefined,
       returnToHeatDate1: '',
       dateServed2: '',
       breedingMethod2: 'Natural',
       sireUsed2: '',
       returnToHeatDate2: ''
     });
+    
     setIsAddHeatBreedingModalVisible(false);
   };
 
@@ -2110,26 +2127,41 @@ function RegisterContent() {
             </View>
             <ScrollView style={styles.modalBody}>
               <View style={styles.formGroup}>
-                <Text variant="body2" style={styles.label}>Ear Tag Number *</Text>
-                <TextInput
-                  style={styles.input}
+                <Picker
+                  label="Select Animal *"
                   value={newHeatBreedingRecord.earTagNumber}
-                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, earTagNumber: text})}
-                  placeholder="Enter ear tag number"
+                  onValueChange={(value) => {
+                    const selectedAnimal = herdRegisterData.find(animal => animal.tag === value);
+                    setNewHeatBreedingRecord({
+                      ...newHeatBreedingRecord,
+                      earTagNumber: value,
+                      stockType: selectedAnimal?.stockType || 'Cow'
+                    });
+                  }}
+                  items={[
+                    { label: 'Select an animal...', value: '' },
+                    ...herdRegisterData
+                      .filter(animal => ['Cow', 'Heifer', 'Heifer (First Calf)'].includes(animal.stockType))
+                      .map(animal => ({
+                        label: `${animal.tag} (${animal.breed} ${animal.stockType})`,
+                        value: animal.tag
+                      }))
+                  ]}
                 />
               </View>
 
               <View style={styles.formGroup}>
-                <Text variant="body2" style={styles.label}>Stock Type</Text>
                 <Picker
-                  selectedValue={newHeatBreedingRecord.stockType}
+                  label="Stock Type"
+                  value={newHeatBreedingRecord.stockType}
                   onValueChange={(value) => setNewHeatBreedingRecord({...newHeatBreedingRecord, stockType: value})}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Cow" value="Cow" />
-                  <Picker.Item label="Heifer" value="Heifer" />
-                  <Picker.Item label="Heifer Calf" value="Heifer Calf" />
-                </Picker>
+                  items={[
+                    { label: 'Cow', value: 'Cow' },
+                    { label: 'Heifer', value: 'Heifer' },
+                    { label: 'Heifer (First Calf)', value: 'Heifer (First Calf)' },
+                    { label: 'Heifer Calf', value: 'Heifer Calf' }
+                  ]}
+                />
               </View>
 
               <View style={styles.formGroup}>
@@ -2150,12 +2182,123 @@ function RegisterContent() {
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Heat Detection Date *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newHeatBreedingRecord.heatDetectionDate}
-                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, heatDetectionDate: text})}
-                  placeholder="YYYY-MM-DD"
-                />
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => {
+                    setSelectedDate(newHeatBreedingRecord.heatDetectionDate 
+                      ? new Date(newHeatBreedingRecord.heatDetectionDate) 
+                      : new Date());
+                    setShowHeatDatePicker(true);
+                  }}
+                >
+                  <Text>{newHeatBreedingRecord.heatDetectionDate || 'Select date'}</Text>
+                </TouchableOpacity>
+                
+                {/* Date Picker Modal - Reusable for both date fields */}
+                <Modal
+                  visible={showHeatDatePicker || showServicedDatePicker || showReturnToHeatDatePicker || showDateServed2Picker || showReturnToHeat2DatePicker}
+                  transparent={true}
+                  animationType="slide"
+                  onRequestClose={() => {
+                    setShowHeatDatePicker(false);
+                    setShowServicedDatePicker(false);
+                    setShowReturnToHeatDatePicker(false);
+                    setShowDateServed2Picker(false);
+                    setShowReturnToHeat2DatePicker(false);
+                  }}
+                >
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      <View style={styles.modalHeader}>
+                        <Text variant="h6">
+                          {currentDateField === 'heat' 
+                            ? 'Heat Detection Date' 
+                            : currentDateField === 'serviced' 
+                              ? 'Serviced Date' 
+                              : currentDateField === 'returnToHeat'
+                                ? 'Return to Heat Date (1st)'
+                                : currentDateField === 'dateServed2'
+                                  ? 'Date Served (2nd)'
+                                  : 'Return to Heat Date (2nd)'}
+                        </Text>
+                        <TouchableOpacity onPress={() => {
+                          setShowHeatDatePicker(false);
+                          setShowServicedDatePicker(false);
+                          setShowReturnToHeatDatePicker(false);
+                          setShowDateServed2Picker(false);
+                          setShowReturnToHeat2DatePicker(false);
+                        }}>
+                          <Text style={styles.closeButton}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <DateTimePicker
+                        value={selectedDate}
+                        textColor={Colors.primary[500]} 
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={(event, date) => {
+                          if (date) {
+                            setSelectedDate(date);
+                          }
+                        }}
+                      />
+                      <View style={styles.modalFooter}>
+                        <Button 
+                          onPress={() => {
+                            setShowHeatDatePicker(false);
+                            setShowServicedDatePicker(false);
+                            setShowReturnToHeatDatePicker(false);
+                            setShowDateServed2Picker(false);
+                            setShowReturnToHeat2DatePicker(false);
+                          }}
+                          variant="outline"
+                          style={styles.modalButton}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onPress={() => {
+                            const formattedDate = selectedDate.toISOString().split('T')[0];
+                            if (currentDateField === 'heat') {
+                              setNewHeatBreedingRecord({
+                                ...newHeatBreedingRecord,
+                                heatDetectionDate: formattedDate
+                              });
+                              setShowHeatDatePicker(false);
+                            } else if (currentDateField === 'serviced') {
+                              setNewHeatBreedingRecord({
+                                ...newHeatBreedingRecord,
+                                servicedDate: formattedDate
+                              });
+                              setShowServicedDatePicker(false);
+                            } else if (currentDateField === 'returnToHeat') {
+                              setNewHeatBreedingRecord({
+                                ...newHeatBreedingRecord,
+                                returnToHeatDate1: formattedDate
+                              });
+                              setShowReturnToHeatDatePicker(false);
+                            } else if (currentDateField === 'dateServed2') {
+                              setNewHeatBreedingRecord({
+                                ...newHeatBreedingRecord,
+                                dateServed2: formattedDate
+                              });
+                              setShowDateServed2Picker(false);
+                            } else {
+                              setNewHeatBreedingRecord({
+                                ...newHeatBreedingRecord,
+                                returnToHeatDate2: formattedDate
+                              });
+                              setShowReturnToHeat2DatePicker(false);
+                            }
+                          }}
+                          style={styles.modalButton}
+                        >
+                          Done
+                        </Button>
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
               </View>
 
               <View style={styles.formGroup}>
@@ -2170,12 +2313,18 @@ function RegisterContent() {
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Serviced Date</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newHeatBreedingRecord.servicedDate}
-                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, servicedDate: text})}
-                  placeholder="YYYY-MM-DD"
-                />
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => {
+                    setSelectedDate(newHeatBreedingRecord.servicedDate 
+                      ? new Date(newHeatBreedingRecord.servicedDate) 
+                      : new Date());
+                    setCurrentDateField('serviced');
+                    setShowServicedDatePicker(true);
+                  }}
+                >
+                  <Text>{newHeatBreedingRecord.servicedDate || 'Select date'}</Text>
+                </TouchableOpacity>
               </View>
 
               {renderRadioGroup('Breeding Status', newHeatBreedingRecord.breedingStatus, breedingStatusOptions, 
@@ -2184,8 +2333,8 @@ function RegisterContent() {
               {renderRadioGroup('Breeding Method', newHeatBreedingRecord.breedingMethod, breedingMethodOptions, 
                 (value) => setNewHeatBreedingRecord({...newHeatBreedingRecord, breedingMethod: value}))}
 
-              {newHeatBreedingRecord.breedingMethod === 'AI' && (
-                <>
+             
+                
                   <View style={styles.formGroup}>
                     <Text variant="body2" style={styles.label}>AI Technician</Text>
                     <TextInput
@@ -2226,27 +2375,38 @@ function RegisterContent() {
                       keyboardType="numeric"
                     />
                   </View>
-                </>
-              )}
+                
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Return to Heat Date (1st)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newHeatBreedingRecord.returnToHeatDate1}
-                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, returnToHeatDate1: text})}
-                  placeholder="YYYY-MM-DD"
-                />
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => {
+                    setSelectedDate(newHeatBreedingRecord.returnToHeatDate1 
+                      ? new Date(newHeatBreedingRecord.returnToHeatDate1) 
+                      : new Date());
+                    setCurrentDateField('returnToHeat');
+                    setShowReturnToHeatDatePicker(true);
+                  }}
+                >
+                  <Text>{newHeatBreedingRecord.returnToHeatDate1 || 'Select date'}</Text>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Date Served (2nd)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newHeatBreedingRecord.dateServed2}
-                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, dateServed2: text})}
-                  placeholder="YYYY-MM-DD"
-                />
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => {
+                    setSelectedDate(newHeatBreedingRecord.dateServed2 
+                      ? new Date(newHeatBreedingRecord.dateServed2) 
+                      : new Date());
+                    setCurrentDateField('dateServed2');
+                    setShowDateServed2Picker(true);
+                  }}
+                >
+                  <Text>{newHeatBreedingRecord.dateServed2 || 'Select date'}</Text>
+                </TouchableOpacity>
               </View>
 
               {renderRadioGroup('Breeding Method (2nd)', newHeatBreedingRecord.breedingMethod2, breedingMethodOptions, 
@@ -2264,12 +2424,18 @@ function RegisterContent() {
 
               <View style={styles.formGroup}>
                 <Text variant="body2" style={styles.label}>Return to Heat Date (2nd)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newHeatBreedingRecord.returnToHeatDate2}
-                  onChangeText={(text) => setNewHeatBreedingRecord({...newHeatBreedingRecord, returnToHeatDate2: text})}
-                  placeholder="YYYY-MM-DD"
-                />
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => {
+                    setSelectedDate(newHeatBreedingRecord.returnToHeatDate2 
+                      ? new Date(newHeatBreedingRecord.returnToHeatDate2) 
+                      : new Date());
+                    setCurrentDateField('returnToHeat2');
+                    setShowReturnToHeat2DatePicker(true);
+                  }}
+                >
+                  <Text>{newHeatBreedingRecord.returnToHeatDate2 || 'Select date'}</Text>
+                </TouchableOpacity>
               </View>
             </ScrollView>
             <View style={styles.modalFooter}>
@@ -3061,6 +3227,49 @@ function RegisterContent() {
           {renderAddFeedModal()}
         </Card>
 
+        {/* Heat Detection & Breeding Section */}
+        <Card 
+          title="Heat Detection & Breeding" 
+          style={styles.card}
+          headerRight={
+            <Button 
+              size="sm" 
+              onPress={() => setIsAddHeatBreedingModalVisible(true)}
+              style={styles.addButton}
+            >
+              + Add Record
+            </Button>
+          }
+        >
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <DataTable
+              columns={[
+                { key: 'earTagNumber', title: 'Ear Tag', width: 100 },
+                { key: 'stockType', title: 'Type', width: 80 },
+                { key: 'bodyConditionScore', title: 'BCS', width: 70, render: (value: number) => value?.toFixed(1) },
+                { key: 'heatDetectionDate', title: 'Heat Date', width: 100 },
+                { 
+                  key: 'breedingStatus', 
+                  title: 'Status', 
+                  width: 120,
+                  render: (value: string) => (
+                    <Text color={
+                      value === 'Bred' ? 'success.500' : 
+                      value === 'Confirmed Pregnant' ? 'primary.500' : 
+                      'neutral.500'
+                    }>
+                      {value}
+                    </Text>
+                  )
+                },
+                { key: 'breedingMethod', title: 'Method', width: 80 },
+                { key: 'servicedDate', title: 'Serviced', width: 100 },
+              ]}
+              data={heatBreedingRecords}
+            />
+          </ScrollView>
+        </Card>
+
         {/* Pregnancy Diagnosis and Calving Section */}
         <Card 
           title="Pregnancy & Calving" 
@@ -3258,11 +3467,49 @@ const styles = StyleSheet.create({
     borderColor: Colors.neutral[300],
     borderRadius: 4,
     padding: 12,
-    fontSize: 14,
-    color: Colors.neutral[900],
-    backgroundColor: Colors.white,
+    marginBottom: 10,
     justifyContent: 'center',
     minHeight: 44,
+    backgroundColor: Colors.white,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    maxHeight: '60%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral[200],
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.neutral[200],
+  },
+  modalButton: {
+    marginLeft: 8,
+    minWidth: 80,
+  },
+  closeButton: {
+    fontSize: 24,
+    padding: 8,
+    color: Colors.neutral[500],
   },
   radioGroup: {
     flexDirection: 'row',
