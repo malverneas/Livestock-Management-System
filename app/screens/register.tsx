@@ -55,9 +55,9 @@ const stockTypeBreakdown: PieChartData[] = [
 ];
 
 // Sample data for tables
-const herdRegisterData = [
-  { unitNo: 'B001', tag: 'TAG123', age: '4y 2m', breed: 'Mashona', sex: 'Male', stockType: 'Bull', source: 'Born' },
-  { unitNo: 'C045', tag: 'TAG456', age: '3y 6m', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
+const herdRegisterData: AnimalData[] = [
+  { id: '1', unitNo: 'B001', tag: 'TAG123', age: '4y 2m', dateOfBirth: '2020-01-01', breed: 'Mashona', sex: 'Male', stockType: 'Bull', source: 'Born' },
+  { id: '2', unitNo: 'C045', tag: 'TAG456', age: '3y 6m', dateOfBirth: '2020-07-01', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
 ];
 
 const calfRegisterData = [
@@ -191,7 +191,7 @@ interface HeatBreedingRecord {
 interface PregnancyCalvingRecord {
   id: string;
   cowEarTag: string;
-  bodyConditionScore: string;
+  bodyConditionScore: number;
   lastServiceDate: string;
   firstTrimesterPD: 'Positive' | 'Negative' | 'Inconclusive' | 'Not Tested';
   secondTrimesterPD: 'Positive' | 'Negative' | 'Inconclusive' | 'Not Tested';
@@ -213,6 +213,7 @@ interface PregnancyCalvingRecord {
 // Bull Breeding Soundness data type
 interface BullBreedingRecord {
   id: string;
+  bullId: string;
   date: string;
   age: string;
   pe: 'Excellent' | 'Good' | 'Poor';
@@ -419,11 +420,11 @@ interface DrugData {
 
 // Sample data for herd register
 const initialHerdRegisterData: AnimalData[] = [
-  { id: '1', unitNo: 'B001', tag: 'TAG123', age: '4y 2m', breed: 'Mashona', sex: 'Male', stockType: 'Bull', source: 'Born' },
-  { id: '2', unitNo: 'C045', tag: 'TAG456', age: '3y 6m', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
-  { id: '3', unitNo: 'H012', tag: 'TAG789', age: '1y 8m', breed: 'Angus', sex: 'Female', stockType: 'Heifer', source: 'Born' },
-  { id: '4', unitNo: 'S078', tag: 'TAG101', age: '2y 11m', breed: 'Hereford', sex: 'Male', stockType: 'Steer', source: 'Born' },
-  { id: '5', unitNo: 'C102', tag: 'TAG202', age: '5y 0m', breed: 'Simmental', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
+  { id: '1', unitNo: 'B001', tag: 'TAG123', age: '4y 2m', dateOfBirth: '2020-05-01', breed: 'Mashona', sex: 'Male', stockType: 'Bull', source: 'Born' },
+  { id: '2', unitNo: 'C045', tag: 'TAG456', age: '3y 6m', dateOfBirth: '2021-01-15', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
+  { id: '3', unitNo: 'H012', tag: 'TAG789', age: '1y 8m', dateOfBirth: '2022-11-10', breed: 'Angus', sex: 'Female', stockType: 'Heifer', source: 'Born' },
+  { id: '4', unitNo: 'S078', tag: 'TAG101', age: '2y 11m', dateOfBirth: '2021-08-20', breed: 'Hereford', sex: 'Male', stockType: 'Steer', source: 'Born' },
+  { id: '5', unitNo: 'C102', tag: 'TAG202', age: '5y 0m', dateOfBirth: '2019-07-01', breed: 'Simmental', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
 ];
 
 // Sample data for drug register
@@ -718,17 +719,18 @@ function RegisterContent() {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isAddHealthRecordModalVisible, setIsAddHealthRecordModalVisible] = useState(false);
   const [isAddBreedingRecordModalVisible, setIsAddBreedingRecordModalVisible] = useState(false);
+  const [showBreedingDatePicker, setShowBreedingDatePicker] = useState(false);
   const [isAddTransactionModalVisible, setIsAddTransactionModalVisible] = useState(false);
   const [isAddWeightRecordModalVisible, setIsAddWeightRecordModalVisible] = useState(false);
   const [isAddPregnancyModalVisible, setIsAddPregnancyModalVisible] = useState(false);
   const [herdRegisterData, setHerdRegisterData] = useState<AnimalData[]>([
     ...initialHerdRegisterData,
-    { id: '3', unitNo: 'H078', tag: 'TAG789', age: '1y 3m', breed: 'Angus', sex: 'Female', stockType: 'Heifer', source: 'Born' },
-    { id: '4', unitNo: 'S123', tag: 'TAG101', age: '2y 0m', breed: 'Hereford', sex: 'Male', stockType: 'Steer', source: 'Purchased' },
-    { id: '5', unitNo: 'C102', tag: 'TAG202', age: '4y 6m', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
+    { id: '3', unitNo: 'H078', tag: 'TAG789', age: '1y 3m', dateOfBirth: '2022-04-01', breed: 'Angus', sex: 'Female', stockType: 'Heifer', source: 'Born' },
+    { id: '4', unitNo: 'S123', tag: 'TAG101', age: '2y 0m', dateOfBirth: '2021-07-01', breed: 'Hereford', sex: 'Male', stockType: 'Steer', source: 'Purchased' },
+    { id: '5', unitNo: 'C102', tag: 'TAG202', age: '4y 6m', dateOfBirth: '2019-01-01', breed: 'Brahman', sex: 'Female', stockType: 'Cow', source: 'Purchased' },
   ]);
   const [pregnancyCalvingRecords, setPregnancyCalvingRecords] = useState<PregnancyCalvingRecord[]>(pregnancyCalvingData);
-  const [newPregnancyRecord, setNewPregnancyRecord] = useState<Omit<PregnancyCalvingRecord, 'id' | 'expectedReturnToHeatDate'>>({
+  const [newPregnancyRecord, setNewPregnancyRecord] = useState<Omit<PregnancyCalvingRecord, 'id'>>({
     cowEarTag: '',
     bodyConditionScore: 3.0,
     lastServiceDate: new Date().toISOString().split('T')[0],
@@ -739,6 +741,7 @@ function RegisterContent() {
     expectedCalvingDate: '',
     actualCalvingDate: '',
     averageBCS: 3.0,
+    expectedReturnToHeatDate: ''
   });
   const [healthRecords, setHealthRecords] = useState<AnimalHealthRecord[]>(animalHealthRecords);
   const [breedingRecords, setBreedingRecords] = useState<BullBreedingRecord[]>(bullBreedingSoundnessData);
@@ -777,7 +780,8 @@ function RegisterContent() {
     status: 'Pending'
   });
 
-  const [newBreedingRecord, setNewBreedingRecord] = useState<Omit<BullBreedingRecord, 'id'>>({
+  const [newBullBreedingRecord, setNewBullBreedingRecord] = useState<Omit<BullBreedingRecord, 'id'>>({
+    bullId: '',
     date: new Date().toISOString().split('T')[0],
     age: '',
     pe: 'Good',
@@ -793,8 +797,19 @@ function RegisterContent() {
     date: new Date().toISOString().split('T')[0],
     description: '',
     amount: '',
-    type: 'Sale' // Default to Sale, can be changed to Purchase
+    type: 'Sale' as 'Sale' | 'Purchase',
+    animalTag: '', // For sales
+    purchaseDetails: { // For purchases
+      tag: '',
+      dateOfBirth: '',
+      breed: '',
+      sex: 'Male' as 'Male' | 'Female',
+      stockType: '',
+      source: 'Purchased'
+    }
   });
+  const [isTransactionDatePickerVisible, setTransactionDatePickerVisibility] = useState(false);
+  const [isPurchaseDobPickerVisible, setPurchaseDobPickerVisible] = useState(false);
 
   const [newWeightRecord, setNewWeightRecord] = useState({
     id: '',
@@ -938,9 +953,10 @@ function RegisterContent() {
   };
 
   const handleAddBreedingRecord = () => {
-    const newId = (breedingRecords.length + 1).toString();
-    setBreedingRecords([...breedingRecords, { ...newBreedingRecord, id: newId }]);
-    setNewBreedingRecord({
+    if (!newBullBreedingRecord.bullId) return;
+    setBreedingRecords([...breedingRecords, { ...newBullBreedingRecord, id: newBullBreedingRecord.bullId }]);
+    setNewBullBreedingRecord({
+      bullId: '',
       date: new Date().toISOString().split('T')[0],
       age: '',
       pe: 'Good',
@@ -958,17 +974,58 @@ function RegisterContent() {
     const amount = parseFloat(newTransaction.amount);
     if (isNaN(amount)) return; // Basic validation
 
-    const transaction = {
-      ...newTransaction,
-      amount: newTransaction.type === 'Sale' ? Math.abs(amount) : -Math.abs(amount)
-    };
+    if (newTransaction.type === 'Purchase') {
+      const { tag, dateOfBirth, breed, sex, stockType } = newTransaction.purchaseDetails;
+      if(tag && dateOfBirth && breed && sex && stockType) {
+        const today = new Date();
+        const birthDate = new Date(dateOfBirth);
+        let years = today.getFullYear() - birthDate.getFullYear();
+        let months = today.getMonth() - birthDate.getMonth();
+        if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+          years--;
+          months += 12;
+        }
+        const age = years > 0 ? `${years}y ${months}m` : `${months}m`;
 
-    setTransactions([...transactions, transaction]);
+        const newAnimalData: AnimalData = {
+          id: (herdRegisterData.length + 1).toString(),
+          tag,
+          dateOfBirth,
+          breed,
+          sex,
+          stockType,
+          source: 'Purchased',
+          age,
+        };
+        setHerdRegisterData([...herdRegisterData, newAnimalData]);
+      }
+    }
+
+    const transactionRecord = {
+      id: (transactions.length + 1).toString(),
+      date: newTransaction.date,
+      description: newTransaction.description,
+      amount: newTransaction.type === 'Sale' ? Math.abs(amount) : -Math.abs(amount),
+      type: newTransaction.type,
+    }
+
+    setTransactions([...transactions, transactionRecord]);
+
+    // Reset form
     setNewTransaction({
       date: new Date().toISOString().split('T')[0],
       description: '',
       amount: '',
-      type: 'Sale'
+      type: 'Sale',
+      animalTag: '',
+      purchaseDetails: {
+        tag: '',
+        dateOfBirth: '',
+        breed: '',
+        sex: 'Male',
+        stockType: '',
+        source: 'Purchased'
+      }
     });
     setIsAddTransactionModalVisible(false);
   };
@@ -1350,19 +1407,55 @@ function RegisterContent() {
           >
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Date</Text>
-              <TextInput
-                style={styles.input}
-                value={newTransaction.date}
-                onChangeText={(text) => setNewTransaction({...newTransaction, date: text})}
-                placeholder="YYYY-MM-DD"
-                keyboardType="numbers-and-punctuation"
-              />
+              <TouchableOpacity
+                style={styles.dateInput}
+                onPress={() => {
+                  setSelectedDate(newTransaction.date ? new Date(newTransaction.date) : new Date());
+                  setTransactionDatePickerVisibility(true);
+                }}
+              >
+                <Text>{newTransaction.date || 'Select date'}</Text>
+              </TouchableOpacity>
+
+              <Modal
+                visible={isTransactionDatePickerVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setTransactionDatePickerVisibility(false)}
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalContent}>
+                    <DateTimePicker
+                      value={selectedDate}
+                      textColor={Colors.primary[500]}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={(event, date) => {
+                        if (date) {
+                          setSelectedDate(date);
+                        }
+                      }}
+                    />
+                    <View style={styles.modalActions}>
+                      
+                      <Button
+                        onPress={() => {
+                          setNewTransaction({ ...newTransaction, date: selectedDate.toISOString().split('T')[0] });
+                          setTransactionDatePickerVisibility(false);
+                        }}
+                      >
+                        Done
+                      </Button>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
             
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Transaction Type</Text>
               <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
-                {['Sale', 'Purchase'].map((type) => (
+                {['Sale', 'Purchase'].map((type: 'Sale' | 'Purchase') => (
                   <TouchableOpacity 
                     key={type}
                     style={[
@@ -1377,6 +1470,105 @@ function RegisterContent() {
                 ))}
               </View>
             </View>
+
+            {newTransaction.type === 'Sale' ? (
+              <View style={styles.formGroup}>
+                <Picker
+                  label="Select Animal*"
+                  value={newTransaction.animalTag}
+                  onValueChange={(value) => setNewTransaction({ ...newTransaction, animalTag: value })}
+                  items={[
+                    { label: 'Select an animal...', value: '' },
+                    ...herdRegisterData.map(animal => ({
+                      label: `${animal.tag} (${animal.breed})`,
+                      value: animal.tag
+                    }))
+                  ]}
+                />
+              </View>
+            ) : (
+              <>
+                <View style={styles.formGroup}>
+                  <Text variant="body2" style={styles.label}>Tag</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={newTransaction.purchaseDetails.tag}
+                    onChangeText={(text) => setNewTransaction({ ...newTransaction, purchaseDetails: { ...newTransaction.purchaseDetails, tag: text } })}
+                    placeholder="Enter new tag number"
+                  />
+                </View>
+                <View style={styles.formGroup}>
+                  <Text variant="body2" style={styles.label}>Date of Birth</Text>
+                  <TouchableOpacity
+                    style={styles.dateInput}
+                    onPress={() => {
+                      setSelectedDate(newTransaction.purchaseDetails.dateOfBirth ? new Date(newTransaction.purchaseDetails.dateOfBirth) : new Date());
+                      setPurchaseDobPickerVisible(true);
+                    }}
+                  >
+                    <Text>{newTransaction.purchaseDetails.dateOfBirth || 'Select date'}</Text>
+                  </TouchableOpacity>
+
+                  <Modal
+                    visible={isPurchaseDobPickerVisible}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setPurchaseDobPickerVisible(false)}
+                  >
+                    <View style={styles.modalContainer}>
+                      <View style={styles.modalContent}>
+                        <DateTimePicker
+                          value={selectedDate}
+                          textColor={Colors.primary[500]}
+                          mode="date"
+                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                          onChange={(event, date) => {
+                            if (date) {
+                              setSelectedDate(date);
+                            }
+                          }}
+                        />
+                        <View style={styles.modalActions}>
+                          
+                          <Button
+                            onPress={() => {
+                              setNewTransaction({ ...newTransaction, purchaseDetails: { ...newTransaction.purchaseDetails, dateOfBirth: selectedDate.toISOString().split('T')[0] } });
+                              setPurchaseDobPickerVisible(false);
+                            }}
+                          >
+                            Done
+                          </Button>
+                        </View>
+                      </View>
+                    </View>
+                  </Modal>
+                </View>
+                <Picker
+                  label="Breed"
+                  value={newTransaction.purchaseDetails.breed}
+                  onValueChange={(value) => setNewTransaction({ ...newTransaction, purchaseDetails: { ...newTransaction.purchaseDetails, breed: value } })}
+                  items={breedOptions.filter(option => option.value !== 'all')}
+                />
+                <Picker
+                  label="Sex"
+                  value={newTransaction.purchaseDetails.sex}
+                  onValueChange={(value) => setNewTransaction({ ...newTransaction, purchaseDetails: { ...newTransaction.purchaseDetails, sex: value } })}
+                  items={[{ label: 'Male', value: 'Male' }, { label: 'Female', value: 'Female' }]}
+                />
+                <Picker
+                  label="Stock Type"
+                  value={newTransaction.purchaseDetails.stockType}
+                  onValueChange={(value) => setNewTransaction({ ...newTransaction, purchaseDetails: { ...newTransaction.purchaseDetails, stockType: value } })}
+                  items={[
+                    { label: 'Cow', value: 'Cow' },
+                    { label: 'Bull', value: 'Bull' },
+                    { label: 'Heifer', value: 'Heifer' },
+                    { label: 'Steer', value: 'Steer' },
+                    { label: 'Calf', value: 'Calf' },
+                  ]}
+                />
+              </>
+            )}
             
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Description</Text>
@@ -1441,22 +1633,115 @@ function RegisterContent() {
           <ScrollView 
           >
             <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>Date</Text>
-              <TextInput
-                style={styles.input}
-                value={newBreedingRecord.date}
-                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, date: text})}
-                placeholder="YYYY-MM-DD"
-                keyboardType="numbers-and-punctuation"
+              <Picker
+                label="Select Bull*"
+                value={newBullBreedingRecord.bullId}
+                onValueChange={(value) => {
+                  const selectedBull = herdRegisterData.find(animal => animal.tag === value);
+                  if (selectedBull) {
+                    const today = new Date();
+                    const birthDate = new Date(selectedBull.dateOfBirth);
+                    let years = today.getFullYear() - birthDate.getFullYear();
+                    let months = today.getMonth() - birthDate.getMonth();
+                    if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+                      years--;
+                      months += 12;
+                    }
+                    const ageText = years > 0 ? `${years}y ${months}m` : `${months}m`;
+                    setNewBullBreedingRecord({
+                      ...newBullBreedingRecord,
+                      bullId: value,
+                      age: ageText
+                    });
+                  } else {
+                    setNewBullBreedingRecord({
+                      ...newBullBreedingRecord,
+                      bullId: value,
+                      age: ''
+                    });
+                  }
+                }}
+                items={[
+                  { label: 'Select a bull...', value: '' },
+                  ...herdRegisterData
+                    .filter(animal => animal.sex === 'Male' && animal.stockType === 'Bull')
+                    .map(animal => ({
+                      label: `${animal.tag} (${animal.breed})`,
+                      value: animal.tag
+                    }))
+                ]}
               />
+            </View>
+            <View style={styles.formGroup}>
+              <Text variant="body2" style={styles.label}>Date</Text>
+              <TouchableOpacity
+                style={styles.dateInput}
+                onPress={() => {
+                  setSelectedDate(newBullBreedingRecord.date ? new Date(newBullBreedingRecord.date) : new Date());
+                  setShowBreedingDatePicker(true);
+                }}
+              >
+                <Text>{newBullBreedingRecord.date || 'Select date'}</Text>
+              </TouchableOpacity>
+
+              <Modal
+                visible={showBreedingDatePicker}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowBreedingDatePicker(false)}
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text variant="h6">Select Date</Text>
+                      <TouchableOpacity onPress={() => setShowBreedingDatePicker(false)}>
+                        <Text style={styles.closeButton}>×</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={selectedDate}
+                      textColor={Colors.primary[500]}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={(event, date) => {
+                        if (date) {
+                          setSelectedDate(date);
+                        }
+                      }}
+                    />
+                    <View style={styles.modalFooter}>
+                      <Button
+                        onPress={() => setShowBreedingDatePicker(false)}
+                        variant="outline"
+                        style={styles.modalButton}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onPress={() => {
+                          const formattedDate = selectedDate.toISOString().split('T')[0];
+                          setNewBullBreedingRecord({
+                            ...newBullBreedingRecord,
+                            date: formattedDate
+                          });
+                          setShowBreedingDatePicker(false);
+                        }}
+                        style={styles.modalButton}
+                      >
+                        Done
+                      </Button>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
             
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Age</Text>
               <TextInput
                 style={styles.input}
-                value={newBreedingRecord.age}
-                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, age: text})}
+                value={newBullBreedingRecord.age}
+                onChangeText={(text) => setNewBullBreedingRecord({...newBullBreedingRecord, age: text})}
                 placeholder="e.g., 2y 6m"
               />
             </View>
@@ -1469,10 +1754,10 @@ function RegisterContent() {
                     key={pe}
                     style={[
                       styles.radioButton, 
-                      newBreedingRecord.pe === pe && styles.radioButtonSelected,
+                      newBullBreedingRecord.pe === pe && styles.radioButtonSelected,
                       { marginRight: 8, marginBottom: 8 }
                     ]}
-                    onPress={() => setNewBreedingRecord({...newBreedingRecord, pe: pe as BullBreedingRecord['pe']})}
+                    onPress={() => setNewBullBreedingRecord({...newBullBreedingRecord, pe: pe as BullBreedingRecord['pe']})}
                   >
                     <Text>{pe}</Text>
                   </TouchableOpacity>
@@ -1484,8 +1769,8 @@ function RegisterContent() {
               <Text variant="body2" style={styles.label}>Sperm Motility (%)</Text>
               <TextInput
                 style={styles.input}
-                value={newBreedingRecord.spermMotility}
-                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, spermMotility: text})}
+                value={newBullBreedingRecord.spermMotility}
+                onChangeText={(text) => setNewBullBreedingRecord({...newBullBreedingRecord, spermMotility: text})}
                 placeholder="e.g., 85"
                 keyboardType="numeric"
               />
@@ -1495,8 +1780,8 @@ function RegisterContent() {
               <Text variant="body2" style={styles.label}>Sperm Morphology (%)</Text>
               <TextInput
                 style={styles.input}
-                value={newBreedingRecord.spermMorphology}
-                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, spermMorphology: text})}
+                value={newBullBreedingRecord.spermMorphology}
+                onChangeText={(text) => setNewBullBreedingRecord({...newBullBreedingRecord, spermMorphology: text})}
                 placeholder="e.g., 90"
                 keyboardType="numeric"
               />
@@ -1506,8 +1791,8 @@ function RegisterContent() {
               <Text variant="body2" style={styles.label}>Scrotal Circumference (cm)</Text>
               <TextInput
                 style={styles.input}
-                value={newBreedingRecord.scrotal}
-                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, scrotal: text})}
+                value={newBullBreedingRecord.scrotal}
+                onChangeText={(text) => setNewBullBreedingRecord({...newBullBreedingRecord, scrotal: text})}
                 placeholder="e.g., 35.5"
                 keyboardType="numeric"
               />
@@ -1521,10 +1806,10 @@ function RegisterContent() {
                     key={libido}
                     style={[
                       styles.radioButton, 
-                      newBreedingRecord.libido === libido && styles.radioButtonSelected,
+                      newBullBreedingRecord.libido === libido && styles.radioButtonSelected,
                       { marginRight: 8, marginBottom: 8 }
                     ]}
-                    onPress={() => setNewBreedingRecord({...newBreedingRecord, libido: libido as BullBreedingRecord['libido']})}
+                    onPress={() => setNewBullBreedingRecord({...newBullBreedingRecord, libido: libido as BullBreedingRecord['libido']})}
                   >
                     <Text>{libido}</Text>
                   </TouchableOpacity>
@@ -1536,8 +1821,8 @@ function RegisterContent() {
               <Text variant="body2" style={styles.label}>Score</Text>
               <TextInput
                 style={styles.input}
-                value={newBreedingRecord.score}
-                onChangeText={(text) => setNewBreedingRecord({...newBreedingRecord, score: text})}
+                value={newBullBreedingRecord.score}
+                onChangeText={(text) => setNewBullBreedingRecord({...newBullBreedingRecord, score: text})}
                 placeholder="e.g., 85"
                 keyboardType="numeric"
               />
@@ -1551,10 +1836,10 @@ function RegisterContent() {
                     key={classification}
                     style={[
                       styles.radioButton, 
-                      newBreedingRecord.classification === classification && styles.radioButtonSelected,
+                      newBullBreedingRecord.classification === classification && styles.radioButtonSelected,
                       { marginRight: 8, marginBottom: 8 }
                     ]}
-                    onPress={() => setNewBreedingRecord({...newBreedingRecord, classification: classification as BullBreedingRecord['classification']})}
+                    onPress={() => setNewBullBreedingRecord({...newBullBreedingRecord, classification: classification as BullBreedingRecord['classification']})}
                   >
                     <Text>{classification}</Text>
                   </TouchableOpacity>
@@ -1573,7 +1858,7 @@ function RegisterContent() {
             </Button>
             <Button 
               onPress={handleAddBreedingRecord}
-              disabled={!newBreedingRecord.age || !newBreedingRecord.spermMotility || !newBreedingRecord.spermMorphology || !newBreedingRecord.scrotal || !newBreedingRecord.score}
+              disabled={!newBullBreedingRecord.bullId || !newBullBreedingRecord.age || !newBullBreedingRecord.spermMotility || !newBullBreedingRecord.spermMorphology || !newBullBreedingRecord.scrotal || !newBullBreedingRecord.score}
             >
               Add Record
             </Button>
