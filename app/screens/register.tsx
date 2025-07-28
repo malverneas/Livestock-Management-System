@@ -812,7 +812,7 @@ function RegisterContent() {
   const [isPurchaseDobPickerVisible, setPurchaseDobPickerVisible] = useState(false);
 
   const [newWeightRecord, setNewWeightRecord] = useState({
-    id: '',
+    tag: '',
     stockType: 'Bull',
     age: '',
     jan: '',
@@ -1034,7 +1034,7 @@ function RegisterContent() {
     // Create a new record with all months, using empty string for months without values
     const newRecord = {
       ...newWeightRecord,
-      id: `W${weightRecords.length + 1}`,
+      id: newWeightRecord.tag,
       // Ensure all month fields are included, even if empty
       jan: newWeightRecord.jan || '0',
       feb: newWeightRecord.feb || '0',
@@ -1053,7 +1053,7 @@ function RegisterContent() {
     setWeightRecords([...weightRecords, newRecord]);
     // Reset the form
     setNewWeightRecord({
-      id: '',
+      tag: '',
       stockType: 'Bull',
       age: '',
       jan: '',
@@ -1312,32 +1312,44 @@ function RegisterContent() {
           <ScrollView 
           >
             <View style={styles.formGroup}>
-              <Text variant="body2" style={styles.label}>ID</Text>
-              <TextInput
-                style={styles.input}
-                value={newWeightRecord.id}
-                onChangeText={(text) => setNewWeightRecord({...newWeightRecord, id: text})}
-                placeholder="e.g., B001"
+              <Picker
+                label="Select Animal*"
+                value={newWeightRecord.tag}
+                onValueChange={(value) => {
+                  const selectedAnimal = herdRegisterData.find(animal => animal.tag === value);
+                  if (selectedAnimal) {
+                    setNewWeightRecord({
+                      ...newWeightRecord,
+                      tag: value,
+                      stockType: selectedAnimal.stockType,
+                      age: selectedAnimal.age
+                    });
+                  } else {
+                    setNewWeightRecord({
+                      ...newWeightRecord,
+                      tag: value,
+                      stockType: '',
+                      age: ''
+                    });
+                  }
+                }}
+                items={[
+                  { label: 'Select an animal...', value: '' },
+                  ...herdRegisterData.map(animal => ({
+                    label: `${animal.tag} (${animal.breed})`,
+                    value: animal.tag
+                  }))
+                ]}
               />
             </View>
 
             <View style={styles.formGroup}>
               <Text variant="body2" style={styles.label}>Stock Type</Text>
-              <View style={{ flexDirection: 'row', marginTop: 4, flexWrap: 'wrap' }}>
-                {['Bull', 'Cow', 'Heifer', 'Steer'].map((type) => (
-                  <TouchableOpacity 
-                    key={type}
-                    style={[
-                      styles.radioButton, 
-                      newWeightRecord.stockType === type && styles.radioButtonSelected,
-                      { marginRight: 8, marginBottom: 8 }
-                    ]}
-                    onPress={() => setNewWeightRecord({...newWeightRecord, stockType: type})}
-                  >
-                    <Text>{type}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <TextInput
+                style={styles.input}
+                value={newWeightRecord.stockType}
+                editable={false}
+              />
             </View>
 
             <View style={styles.formGroup}>
@@ -1345,8 +1357,7 @@ function RegisterContent() {
               <TextInput
                 style={styles.input}
                 value={newWeightRecord.age}
-                onChangeText={(text) => setNewWeightRecord({...newWeightRecord, age: text})}
-                placeholder="e.g., 2y 6m"
+                editable={false}
               />
             </View>
 
@@ -1382,7 +1393,7 @@ function RegisterContent() {
             </Button>
             <Button 
               onPress={handleAddWeightRecord}
-              disabled={!newWeightRecord.id || !newWeightRecord.stockType || !newWeightRecord.age}
+              disabled={!newWeightRecord.tag}
             >
               Add Record
             </Button>
