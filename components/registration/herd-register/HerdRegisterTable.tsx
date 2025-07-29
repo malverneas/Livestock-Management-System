@@ -4,7 +4,7 @@ import { Text } from '../../typography/Text';
 import { Card } from '../../ui/Card';
 import { DataTable } from '../../tables/DataTable';
 import { Button } from '../../ui/Button';
-import { Plus, Edit, Trash2 } from 'lucide-react-native';
+import { Plus, CreditCard as Edit, Trash2 } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
 
 interface HerdRecord {
