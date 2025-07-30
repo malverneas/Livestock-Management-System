@@ -15,6 +15,18 @@ import { DrugRegisterTable } from '../../components/registration/drug-register/D
 import { DrugRegisterModal } from '../../components/registration/drug-register/DrugRegisterModal';
 import { HeatDetectionTable } from '../../components/registration/heat-detection/HeatDetectionTable';
 import { HeatDetectionModal } from '../../components/registration/heat-detection/HeatDetectionModal';
+import { MortalityRegisterTable } from '../../components/registration/mortality-register/MortalityRegisterTable';
+import { MortalityRegisterModal } from '../../components/registration/mortality-register/MortalityRegisterModal';
+import { PregnancyRegisterTable } from '../../components/registration/pregnancy-register/PregnancyRegisterTable';
+import { PregnancyRegisterModal } from '../../components/registration/pregnancy-register/PregnancyRegisterModal';
+import { SalesRegisterTable } from '../../components/registration/sales-register/SalesRegisterTable';
+import { SalesRegisterModal } from '../../components/registration/sales-register/SalesRegisterModal';
+import { BreedingSoundnessTable } from '../../components/registration/breeding-soundness/BreedingSoundnessTable';
+import { BreedingSoundnessModal } from '../../components/registration/breeding-soundness/BreedingSoundnessModal';
+import { FeedInventoryTable } from '../../components/registration/feed-inventory/FeedInventoryTable';
+import { FeedInventoryModal } from '../../components/registration/feed-inventory/FeedInventoryModal';
+import { HealthRecordTable } from '../../components/registration/health-record/HealthRecordTable';
+import { HealthRecordModal } from '../../components/registration/health-record/HealthRecordModal';
 
 // Sample data for each register
 const sampleHerdData = [
@@ -83,6 +95,99 @@ const sampleHeatDetectionData = [
   },
 ];
 
+const sampleMortalityData = [
+  {
+    id: '1',
+    animalTag: 'H003',
+    dateOfEvent: '2024-05-20',
+    eventType: 'death',
+    cause: 'Disease',
+    weight: '400',
+    value: '1200.00',
+    disposalMethod: 'burial',
+    notes: 'Sudden illness',
+  },
+];
+
+const samplePregnancyData = [
+  {
+    id: '1',
+    animalTag: 'H001',
+    breedingDate: '2024-03-15',
+    bullUsed: 'B001',
+    pregnancyCheckDate: '2024-05-15',
+    pregnancyStatus: 'pregnant',
+    expectedCalvingDate: '2024-12-15',
+    actualCalvingDate: '',
+    calfTag: '',
+    calvingDifficulty: '',
+    notes: 'First pregnancy',
+  },
+];
+
+const sampleSalesData = [
+  {
+    id: '1',
+    animalTag: 'H004',
+    transactionDate: '2024-06-01',
+    transactionType: 'sale',
+    buyer: 'Local Butcher',
+    weight: '480',
+    pricePerKg: '8.50',
+    totalPrice: '4080.00',
+    paymentMethod: 'cash',
+    notes: 'Good condition',
+  },
+];
+
+const sampleBreedingSoundnessData = [
+  {
+    id: '1',
+    bullTag: 'B001',
+    evaluationDate: '2024-06-15',
+    veterinarian: 'Dr. Smith',
+    physicalExam: 'pass',
+    reproductiveExam: 'pass',
+    semenQuality: 'pass',
+    overallClassification: 'satisfactory',
+    recommendations: 'Continue breeding program',
+    nextEvaluationDate: '2025-06-15',
+  },
+];
+
+const sampleFeedInventoryData = [
+  {
+    id: '1',
+    feedType: 'dairy_meal',
+    brand: 'ProFeed',
+    batchNumber: 'DF2024001',
+    dateReceived: '2024-06-01',
+    expiryDate: '2024-12-01',
+    quantityReceived: '1000',
+    currentStock: '750',
+    unitCost: '45.00',
+    supplier: 'Feed Supply Co.',
+    storageLocation: 'Warehouse A',
+  },
+];
+
+const sampleHealthRecordData = [
+  {
+    id: '1',
+    animalTag: 'H001',
+    treatmentDate: '2024-06-10',
+    treatmentType: 'vaccination',
+    diagnosis: 'Preventive care',
+    treatment: 'FMD Vaccine',
+    veterinarian: 'Dr. Johnson',
+    drugUsed: 'FMD Vaccine',
+    dosage: '2ml',
+    withdrawalPeriod: '0',
+    followUpDate: '2025-06-10',
+    notes: 'Annual vaccination',
+  },
+];
+
 export default function RegisterScreen() {
   return (
     <>
@@ -105,18 +210,36 @@ function RegisterContent() {
   const [calfModalVisible, setCalfModalVisible] = useState(false);
   const [drugModalVisible, setDrugModalVisible] = useState(false);
   const [heatDetectionModalVisible, setHeatDetectionModalVisible] = useState(false);
+  const [mortalityModalVisible, setMortalityModalVisible] = useState(false);
+  const [pregnancyModalVisible, setPregnancyModalVisible] = useState(false);
+  const [salesModalVisible, setSalesModalVisible] = useState(false);
+  const [breedingSoundnessModalVisible, setBreedingSoundnessModalVisible] = useState(false);
+  const [feedInventoryModalVisible, setFeedInventoryModalVisible] = useState(false);
+  const [healthRecordModalVisible, setHealthRecordModalVisible] = useState(false);
   
   // Edit record states
   const [editingHerdRecord, setEditingHerdRecord] = useState(null);
   const [editingCalfRecord, setEditingCalfRecord] = useState(null);
   const [editingDrugRecord, setEditingDrugRecord] = useState(null);
   const [editingHeatDetectionRecord, setEditingHeatDetectionRecord] = useState(null);
+  const [editingMortalityRecord, setEditingMortalityRecord] = useState(null);
+  const [editingPregnancyRecord, setEditingPregnancyRecord] = useState(null);
+  const [editingSalesRecord, setEditingSalesRecord] = useState(null);
+  const [editingBreedingSoundnessRecord, setEditingBreedingSoundnessRecord] = useState(null);
+  const [editingFeedInventoryRecord, setEditingFeedInventoryRecord] = useState(null);
+  const [editingHealthRecord, setEditingHealthRecord] = useState(null);
   
   // Data states
   const [herdData, setHerdData] = useState(sampleHerdData);
   const [calfData, setCalfData] = useState(sampleCalfData);
   const [drugData, setDrugData] = useState(sampleDrugData);
   const [heatDetectionData, setHeatDetectionData] = useState(sampleHeatDetectionData);
+  const [mortalityData, setMortalityData] = useState(sampleMortalityData);
+  const [pregnancyData, setPregnancyData] = useState(samplePregnancyData);
+  const [salesData, setSalesData] = useState(sampleSalesData);
+  const [breedingSoundnessData, setBreedingSoundnessData] = useState(sampleBreedingSoundnessData);
+  const [feedInventoryData, setFeedInventoryData] = useState(sampleFeedInventoryData);
+  const [healthRecordData, setHealthRecordData] = useState(sampleHealthRecordData);
 
   // Handle scroll to specific bull if coming from genetics screen
   React.useEffect(() => {
@@ -226,6 +349,156 @@ function RegisterContent() {
     }
   };
 
+  // Mortality Register handlers
+  const handleAddMortality = () => {
+    setEditingMortalityRecord(null);
+    setMortalityModalVisible(true);
+  };
+
+  const handleEditMortality = (record: any) => {
+    setEditingMortalityRecord(record);
+    setMortalityModalVisible(true);
+  };
+
+  const handleDeleteMortality = (id: string) => {
+    setMortalityData(mortalityData.filter(item => item.id !== id));
+  };
+
+  const handleSaveMortality = (record: any) => {
+    if (editingMortalityRecord) {
+      setMortalityData(mortalityData.map(item => 
+        item.id === editingMortalityRecord.id ? { ...record, id: editingMortalityRecord.id } : item
+      ));
+    } else {
+      setMortalityData([...mortalityData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
+  // Pregnancy Register handlers
+  const handleAddPregnancy = () => {
+    setEditingPregnancyRecord(null);
+    setPregnancyModalVisible(true);
+  };
+
+  const handleEditPregnancy = (record: any) => {
+    setEditingPregnancyRecord(record);
+    setPregnancyModalVisible(true);
+  };
+
+  const handleDeletePregnancy = (id: string) => {
+    setPregnancyData(pregnancyData.filter(item => item.id !== id));
+  };
+
+  const handleSavePregnancy = (record: any) => {
+    if (editingPregnancyRecord) {
+      setPregnancyData(pregnancyData.map(item => 
+        item.id === editingPregnancyRecord.id ? { ...record, id: editingPregnancyRecord.id } : item
+      ));
+    } else {
+      setPregnancyData([...pregnancyData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
+  // Sales Register handlers
+  const handleAddSales = () => {
+    setEditingSalesRecord(null);
+    setSalesModalVisible(true);
+  };
+
+  const handleEditSales = (record: any) => {
+    setEditingSalesRecord(record);
+    setSalesModalVisible(true);
+  };
+
+  const handleDeleteSales = (id: string) => {
+    setSalesData(salesData.filter(item => item.id !== id));
+  };
+
+  const handleSaveSales = (record: any) => {
+    if (editingSalesRecord) {
+      setSalesData(salesData.map(item => 
+        item.id === editingSalesRecord.id ? { ...record, id: editingSalesRecord.id } : item
+      ));
+    } else {
+      setSalesData([...salesData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
+  // Breeding Soundness handlers
+  const handleAddBreedingSoundness = () => {
+    setEditingBreedingSoundnessRecord(null);
+    setBreedingSoundnessModalVisible(true);
+  };
+
+  const handleEditBreedingSoundness = (record: any) => {
+    setEditingBreedingSoundnessRecord(record);
+    setBreedingSoundnessModalVisible(true);
+  };
+
+  const handleDeleteBreedingSoundness = (id: string) => {
+    setBreedingSoundnessData(breedingSoundnessData.filter(item => item.id !== id));
+  };
+
+  const handleSaveBreedingSoundness = (record: any) => {
+    if (editingBreedingSoundnessRecord) {
+      setBreedingSoundnessData(breedingSoundnessData.map(item => 
+        item.id === editingBreedingSoundnessRecord.id ? { ...record, id: editingBreedingSoundnessRecord.id } : item
+      ));
+    } else {
+      setBreedingSoundnessData([...breedingSoundnessData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
+  // Feed Inventory handlers
+  const handleAddFeedInventory = () => {
+    setEditingFeedInventoryRecord(null);
+    setFeedInventoryModalVisible(true);
+  };
+
+  const handleEditFeedInventory = (record: any) => {
+    setEditingFeedInventoryRecord(record);
+    setFeedInventoryModalVisible(true);
+  };
+
+  const handleDeleteFeedInventory = (id: string) => {
+    setFeedInventoryData(feedInventoryData.filter(item => item.id !== id));
+  };
+
+  const handleSaveFeedInventory = (record: any) => {
+    if (editingFeedInventoryRecord) {
+      setFeedInventoryData(feedInventoryData.map(item => 
+        item.id === editingFeedInventoryRecord.id ? { ...record, id: editingFeedInventoryRecord.id } : item
+      ));
+    } else {
+      setFeedInventoryData([...feedInventoryData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
+  // Health Record handlers
+  const handleAddHealthRecord = () => {
+    setEditingHealthRecord(null);
+    setHealthRecordModalVisible(true);
+  };
+
+  const handleEditHealthRecord = (record: any) => {
+    setEditingHealthRecord(record);
+    setHealthRecordModalVisible(true);
+  };
+
+  const handleDeleteHealthRecord = (id: string) => {
+    setHealthRecordData(healthRecordData.filter(item => item.id !== id));
+  };
+
+  const handleSaveHealthRecord = (record: any) => {
+    if (editingHealthRecord) {
+      setHealthRecordData(healthRecordData.map(item => 
+        item.id === editingHealthRecord.id ? { ...record, id: editingHealthRecord.id } : item
+      ));
+    } else {
+      setHealthRecordData([...healthRecordData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
   const tabs = [
     { id: 'herd', title: 'Herd Register' },
     { id: 'calf', title: 'Calf Register' },
@@ -306,6 +579,108 @@ function RegisterContent() {
               onClose={() => setHeatDetectionModalVisible(false)}
               onSave={handleSaveHeatDetection}
               editRecord={editingHeatDetectionRecord}
+            />
+          </>
+        );
+      case 'mortality':
+        return (
+          <>
+            <MortalityRegisterTable
+              data={mortalityData}
+              onAdd={handleAddMortality}
+              onEdit={handleEditMortality}
+              onDelete={handleDeleteMortality}
+            />
+            <MortalityRegisterModal
+              visible={mortalityModalVisible}
+              onClose={() => setMortalityModalVisible(false)}
+              onSave={handleSaveMortality}
+              editRecord={editingMortalityRecord}
+            />
+          </>
+        );
+      case 'pregnancy':
+        return (
+          <>
+            <PregnancyRegisterTable
+              data={pregnancyData}
+              onAdd={handleAddPregnancy}
+              onEdit={handleEditPregnancy}
+              onDelete={handleDeletePregnancy}
+            />
+            <PregnancyRegisterModal
+              visible={pregnancyModalVisible}
+              onClose={() => setPregnancyModalVisible(false)}
+              onSave={handleSavePregnancy}
+              editRecord={editingPregnancyRecord}
+            />
+          </>
+        );
+      case 'sales':
+        return (
+          <>
+            <SalesRegisterTable
+              data={salesData}
+              onAdd={handleAddSales}
+              onEdit={handleEditSales}
+              onDelete={handleDeleteSales}
+            />
+            <SalesRegisterModal
+              visible={salesModalVisible}
+              onClose={() => setSalesModalVisible(false)}
+              onSave={handleSaveSales}
+              editRecord={editingSalesRecord}
+            />
+          </>
+        );
+      case 'breeding':
+        return (
+          <>
+            <BreedingSoundnessTable
+              data={breedingSoundnessData}
+              onAdd={handleAddBreedingSoundness}
+              onEdit={handleEditBreedingSoundness}
+              onDelete={handleDeleteBreedingSoundness}
+            />
+            <BreedingSoundnessModal
+              visible={breedingSoundnessModalVisible}
+              onClose={() => setBreedingSoundnessModalVisible(false)}
+              onSave={handleSaveBreedingSoundness}
+              editRecord={editingBreedingSoundnessRecord}
+            />
+          </>
+        );
+      case 'feed':
+        return (
+          <>
+            <FeedInventoryTable
+              data={feedInventoryData}
+              onAdd={handleAddFeedInventory}
+              onEdit={handleEditFeedInventory}
+              onDelete={handleDeleteFeedInventory}
+            />
+            <FeedInventoryModal
+              visible={feedInventoryModalVisible}
+              onClose={() => setFeedInventoryModalVisible(false)}
+              onSave={handleSaveFeedInventory}
+              editRecord={editingFeedInventoryRecord}
+            />
+          </>
+        );
+      case 'health':
+        return (
+          <>
+            <HealthRecordTable
+              data={healthRecordData}
+              onAdd={handleAddHealthRecord}
+              onEdit={handleEditHealthRecord}
+              onDelete={handleDeleteHealthRecord}
+            />
+            <HealthRecordModal
+              visible={healthRecordModalVisible}
+              onClose={() => setHealthRecordModalVisible(false)}
+              onSave={handleSaveHealthRecord}
+              editRecord={editingHealthRecord}
             />
           </>
         );
