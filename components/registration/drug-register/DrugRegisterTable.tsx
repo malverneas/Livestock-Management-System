@@ -9,14 +9,12 @@ import Colors from '../../../constants/Colors';
 
 interface DrugRecord {
   id: string;
-  drugName: string;
-  batchNumber: string;
-  expiryDate: string;
+  drug_name: string;
+  expiry_date: string;
   quantity: string;
-  supplier: string;
-  dateReceived: string;
-  cost: string;
-  withdrawalPeriod: string;
+  date_received: string;
+  unit_cost: string;
+  withdrawal_period: string;
 }
 
 interface DrugRegisterTableProps {
@@ -28,14 +26,12 @@ interface DrugRegisterTableProps {
 
 export function DrugRegisterTable({ data, onAdd, onEdit, onDelete }: DrugRegisterTableProps) {
   const columns = [
-    { key: 'drugName', title: 'Drug Name', width: 120 },
-    { key: 'batchNumber', title: 'Batch #', width: 100 },
-    { key: 'expiryDate', title: 'Expiry', width: 100 },
+    { key: 'drug_name', title: 'Drug Name', width: 140 },
+    { key: 'expiry_date', title: 'Expiry', width: 100 },
     { key: 'quantity', title: 'Quantity', width: 80 },
-    { key: 'supplier', title: 'Supplier', width: 100 },
-    { key: 'dateReceived', title: 'Received', width: 100 },
-    { key: 'cost', title: 'Cost', width: 80 },
-    { key: 'withdrawalPeriod', title: 'Withdrawal', width: 100 },
+    { key: 'date_received', title: 'Received', width: 100 },
+    { key: 'unit_cost', title: 'Unit Cost', width: 100 },
+    { key: 'withdrawal_period', title: 'Withdrawal', width: 100 },
     {
       key: 'actions',
       title: 'Actions',

@@ -6,18 +6,19 @@ import { Picker } from '../../inputs/Picker';
 import { Button } from '../../ui/Button';
 import { X } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
+import { useHerd } from '../../../contexts/HerdContext';
 
 interface BreedingSoundnessRecord {
   id: string;
-  bullTag: string;
-  evaluationDate: string;
-  veterinarian: string;
-  physicalExam: string;
-  reproductiveExam: string;
-  semenQuality: string;
-  overallClassification: string;
-  recommendations: string;
-  nextEvaluationDate: string;
+  tag: string;
+  age: number;
+  pe: string;
+  sperm_mortality: string;
+  sperm_morphology: number;
+  scrotal: number;
+  libido: string;
+  score: number;
+  classification: string;
 }
 
 interface BreedingSoundnessModalProps {
@@ -27,58 +28,88 @@ interface BreedingSoundnessModalProps {
   editRecord?: BreedingSoundnessRecord | null;
 }
 
-const examResultOptions = [
-  { label: 'Pass', value: 'pass' },
-  { label: 'Fail', value: 'fail' },
-  { label: 'Conditional', value: 'conditional' },
+const peOptions = [
+  { label: 'Poor', value: 'poor' },
+  { label: 'Good', value: 'good' },
+  { label: 'Excellent', value: 'excellent' },
+];
+
+const spermMortalityOptions = [
+  { label: 'Poor', value: 'poor' },
+  { label: 'Good', value: 'good' },
+  { label: 'Excellent', value: 'excellent' },
+];
+
+const libidoOptions = [
+  { label: 'Poor', value: 'poor' },
+  { label: 'Good', value: 'good' },
+  { label: 'Excellent', value: 'excellent' },
 ];
 
 const classificationOptions = [
-  { label: 'Satisfactory Potential Breeder', value: 'satisfactory' },
-  { label: 'Un-Satisfactory Potential Breeder', value: 'unsatisfactory' },
-  { label: 'Classification Deferred', value: 'deferred' },
+  { label: 'SPB (Satisfactory Potential Breeder)', value: 'SPB' },
+  { label: 'USPB (Un-Satisfactory Potential Breeder)', value: 'USPB' },
+  { label: 'CD (Classification Deferred)', value: 'CD' },
 ];
 
 export function BreedingSoundnessModal({ visible, onClose, onSave, editRecord }: BreedingSoundnessModalProps) {
+  const { herdData } = useHerd();
   const [formData, setFormData] = useState({
-    bullTag: '',
-    evaluationDate: '',
-    veterinarian: '',
-    physicalExam: '',
-    reproductiveExam: '',
-    semenQuality: '',
-    overallClassification: '',
-    recommendations: '',
-    nextEvaluationDate: '',
+    tag: '',
+    age: 0,
+    pe: '',
+    sperm_mortality: '',
+    sperm_morphology: 0,
+    scrotal: 0,
+    libido: '',
+    score: 0,
+    classification: '',
   });
+
+  // Filter herd data to show only male animals for bull breeding soundness
+  const bullOptions = herdData
+    .filter(animal => animal.sex === 'male')
+    .map(animal => ({
+      label: `${animal.tag_number} (${animal.breed}, ${animal.age} years)`,
+      value: animal.tag_number,
+    }));
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        bullTag: editRecord.bullTag,
-        evaluationDate: editRecord.evaluationDate,
-        veterinarian: editRecord.veterinarian,
-        physicalExam: editRecord.physicalExam,
-        reproductiveExam: editRecord.reproductiveExam,
-        semenQuality: editRecord.semenQuality,
-        overallClassification: editRecord.overallClassification,
-        recommendations: editRecord.recommendations,
-        nextEvaluationDate: editRecord.nextEvaluationDate,
+        tag: editRecord.tag,
+        age: editRecord.age,
+        pe: editRecord.pe,
+        sperm_mortality: editRecord.sperm_mortality,
+        sperm_morphology: editRecord.sperm_morphology,
+        scrotal: editRecord.scrotal,
+        libido: editRecord.libido,
+        score: editRecord.score,
+        classification: editRecord.classification,
       });
     } else {
       setFormData({
-        bullTag: '',
-        evaluationDate: '',
-        veterinarian: '',
-        physicalExam: '',
-        reproductiveExam: '',
-        semenQuality: '',
-        overallClassification: '',
-        recommendations: '',
-        nextEvaluationDate: '',
+        tag: '',
+        age: 0,
+        pe: '',
+        sperm_mortality: '',
+        sperm_morphology: 0,
+        scrotal: 0,
+        libido: '',
+        score: 0,
+        classification: '',
       });
     }
   }, [editRecord, visible]);
+
+  const handleTagChange = (selectedTag: string) => {
+    const selectedAnimal = herdData.find(animal => animal.tag_number === selectedTag);
+    setFormData({
+      ...formData,
+      tag: selectedTag,
+      age: selectedAnimal?.age || 0,
+    });
+  };
 
   const handleSave = () => {
     onSave(formData);
@@ -98,69 +129,72 @@ export function BreedingSoundnessModal({ visible, onClose, onSave, editRecord }:
         </View>
 
         <ScrollView style={styles.content}>
-          <TextField
+          <Picker
             label="Bull Tag"
-            value={formData.bullTag}
-            onChangeText={(text) => setFormData({ ...formData, bullTag: text })}
-            placeholder="Enter bull tag number"
+            value={formData.tag}
+            onValueChange={handleTagChange}
+            items={bullOptions}
           />
 
           <TextField
-            label="Evaluation Date"
-            value={formData.evaluationDate}
-            onChangeText={(text) => setFormData({ ...formData, evaluationDate: text })}
-            placeholder="YYYY-MM-DD"
+            label="Age (years)"
+            value={formData.age.toString()}
+            onChangeText={(text) => setFormData({ ...formData, age: parseInt(text) || 0 })}
+            placeholder="Age will be auto-filled"
+            keyboardType="numeric"
+            editable={false}
+          />
+
+          <Picker
+            label="Physical Examination (PE)"
+            value={formData.pe}
+            onValueChange={(value) => setFormData({ ...formData, pe: value })}
+            items={peOptions}
+          />
+
+          <Picker
+            label="Sperm Mortality"
+            value={formData.sperm_mortality}
+            onValueChange={(value) => setFormData({ ...formData, sperm_mortality: value })}
+            items={spermMortalityOptions}
           />
 
           <TextField
-            label="Veterinarian"
-            value={formData.veterinarian}
-            onChangeText={(text) => setFormData({ ...formData, veterinarian: text })}
-            placeholder="Enter veterinarian name"
+            label="Sperm Morphology (%)"
+            value={formData.sperm_morphology.toString()}
+            onChangeText={(text) => setFormData({ ...formData, sperm_morphology: parseFloat(text) || 0 })}
+            placeholder="Enter percentage"
+            keyboardType="numeric"
+          />
+
+          <TextField
+            label="Scrotal (cm)"
+            value={formData.scrotal.toString()}
+            onChangeText={(text) => setFormData({ ...formData, scrotal: parseFloat(text) || 0 })}
+            placeholder="Enter scrotal circumference"
+            keyboardType="numeric"
           />
 
           <Picker
-            label="Physical Examination"
-            value={formData.physicalExam}
-            onValueChange={(value) => setFormData({ ...formData, physicalExam: value })}
-            items={examResultOptions}
+            label="Libido"
+            value={formData.libido}
+            onValueChange={(value) => setFormData({ ...formData, libido: value })}
+            items={libidoOptions}
+          />
+
+          <TextField
+            label="Score"
+            value={formData.score.toString()}
+            onChangeText={(text) => setFormData({ ...formData, score: parseFloat(text) || 0 })}
+            placeholder="Enter overall score"
+            keyboardType="numeric"
           />
 
           <Picker
-            label="Reproductive Examination"
-            value={formData.reproductiveExam}
-            onValueChange={(value) => setFormData({ ...formData, reproductiveExam: value })}
-            items={examResultOptions}
-          />
-
-          <Picker
-            label="Semen Quality"
-            value={formData.semenQuality}
-            onValueChange={(value) => setFormData({ ...formData, semenQuality: value })}
-            items={examResultOptions}
-          />
-
-          <Picker
-            label="Overall Classification"
-            value={formData.overallClassification}
-            onValueChange={(value) => setFormData({ ...formData, overallClassification: value })}
+            label="Classification"
+            value={formData.classification}
+            onValueChange={(value) => setFormData({ ...formData, classification: value })}
             items={classificationOptions}
-          />
-
-          <TextField
-            label="Recommendations"
-            value={formData.recommendations}
-            onChangeText={(text) => setFormData({ ...formData, recommendations: text })}
-            placeholder="Enter recommendations"
-            multiline
-            numberOfLines={3}
-          />
-
-          <TextField
-            label="Next Evaluation Date"
-            value={formData.nextEvaluationDate}
-            onChangeText={(text) => setFormData({ ...formData, nextEvaluationDate: text })}
-            placeholder="YYYY-MM-DD"
           />
         </ScrollView>
 

@@ -2,23 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from '../../typography/Text';
 import { TextField } from '../../inputs/TextField';
-import { Picker } from '../../inputs/Picker';
 import { Button } from '../../ui/Button';
 import { X } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
 
 interface PregnancyRecord {
   id: string;
-  animalTag: string;
-  breedingDate: string;
-  bullUsed: string;
-  pregnancyCheckDate: string;
-  pregnancyStatus: string;
-  expectedCalvingDate: string;
-  actualCalvingDate: string;
-  calfTag: string;
-  calvingDifficulty: string;
-  notes: string;
+  year_number: number;
+  prebreeding_bcs: number;
+  last_service_date: string;
+  first_pd: string;
+  second_pd: string;
+  third_pd: string;
+  gestation_period: number;
+  expected_calving_date: string;
+  actual_calving_date: string;
 }
 
 interface PregnancyRegisterModalProps {
@@ -28,61 +26,43 @@ interface PregnancyRegisterModalProps {
   editRecord?: PregnancyRecord | null;
 }
 
-const pregnancyStatusOptions = [
-  { label: 'Pregnant', value: 'pregnant' },
-  { label: 'Not Pregnant', value: 'not_pregnant' },
-  { label: 'Uncertain', value: 'uncertain' },
-  { label: 'Calved', value: 'calved' },
-];
-
-const calvingDifficultyOptions = [
-  { label: 'Easy', value: 'easy' },
-  { label: 'Moderate', value: 'moderate' },
-  { label: 'Difficult', value: 'difficult' },
-  { label: 'Assisted', value: 'assisted' },
-  { label: 'Caesarean', value: 'caesarean' },
-];
-
 export function PregnancyRegisterModal({ visible, onClose, onSave, editRecord }: PregnancyRegisterModalProps) {
   const [formData, setFormData] = useState({
-    animalTag: '',
-    breedingDate: '',
-    bullUsed: '',
-    pregnancyCheckDate: '',
-    pregnancyStatus: '',
-    expectedCalvingDate: '',
-    actualCalvingDate: '',
-    calfTag: '',
-    calvingDifficulty: '',
-    notes: '',
+    year_number: 1,
+    prebreeding_bcs: 0,
+    last_service_date: '',
+    first_pd: '',
+    second_pd: '',
+    third_pd: '',
+    gestation_period: 0,
+    expected_calving_date: '',
+    actual_calving_date: '',
   });
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        animalTag: editRecord.animalTag,
-        breedingDate: editRecord.breedingDate,
-        bullUsed: editRecord.bullUsed,
-        pregnancyCheckDate: editRecord.pregnancyCheckDate,
-        pregnancyStatus: editRecord.pregnancyStatus,
-        expectedCalvingDate: editRecord.expectedCalvingDate,
-        actualCalvingDate: editRecord.actualCalvingDate,
-        calfTag: editRecord.calfTag,
-        calvingDifficulty: editRecord.calvingDifficulty,
-        notes: editRecord.notes,
+        year_number: editRecord.year_number,
+        prebreeding_bcs: editRecord.prebreeding_bcs,
+        last_service_date: editRecord.last_service_date,
+        first_pd: editRecord.first_pd,
+        second_pd: editRecord.second_pd,
+        third_pd: editRecord.third_pd,
+        gestation_period: editRecord.gestation_period,
+        expected_calving_date: editRecord.expected_calving_date,
+        actual_calving_date: editRecord.actual_calving_date,
       });
     } else {
       setFormData({
-        animalTag: '',
-        breedingDate: '',
-        bullUsed: '',
-        pregnancyCheckDate: '',
-        pregnancyStatus: '',
-        expectedCalvingDate: '',
-        actualCalvingDate: '',
-        calfTag: '',
-        calvingDifficulty: '',
-        notes: '',
+        year_number: 1,
+        prebreeding_bcs: 0,
+        last_service_date: '',
+        first_pd: '',
+        second_pd: '',
+        third_pd: '',
+        gestation_period: 0,
+        expected_calving_date: '',
+        actual_calving_date: '',
       });
     }
   }, [editRecord, visible]);
@@ -97,7 +77,7 @@ export function PregnancyRegisterModal({ visible, onClose, onSave, editRecord }:
       <View style={styles.container}>
         <View style={styles.header}>
           <Text variant="h5" weight="medium">
-            {editRecord ? 'Edit Pregnancy Record' : 'Add Pregnancy Record'}
+            {editRecord ? 'Edit Year Record' : 'Add Year Record'}
           </Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <X size={24} color={Colors.neutral[600]} />
@@ -106,75 +86,69 @@ export function PregnancyRegisterModal({ visible, onClose, onSave, editRecord }:
 
         <ScrollView style={styles.content}>
           <TextField
-            label="Animal Tag"
-            value={formData.animalTag}
-            onChangeText={(text) => setFormData({ ...formData, animalTag: text })}
-            placeholder="Enter animal tag number"
+            label="Year Number"
+            value={formData.year_number.toString()}
+            onChangeText={(text) => setFormData({ ...formData, year_number: parseInt(text) || 1 })}
+            placeholder="Enter year number"
+            keyboardType="numeric"
           />
 
           <TextField
-            label="Breeding Date"
-            value={formData.breedingDate}
-            onChangeText={(text) => setFormData({ ...formData, breedingDate: text })}
+            label="Prebreeding BCS"
+            value={formData.prebreeding_bcs.toString()}
+            onChangeText={(text) => setFormData({ ...formData, prebreeding_bcs: parseFloat(text) || 0 })}
+            placeholder="Enter prebreeding body condition score"
+            keyboardType="numeric"
+          />
+
+          <TextField
+            label="Last Service Date"
+            value={formData.last_service_date}
+            onChangeText={(text) => setFormData({ ...formData, last_service_date: text })}
             placeholder="YYYY-MM-DD"
           />
 
           <TextField
-            label="Bull Used"
-            value={formData.bullUsed}
-            onChangeText={(text) => setFormData({ ...formData, bullUsed: text })}
-            placeholder="Enter bull tag number"
-          />
-
-          <TextField
-            label="Pregnancy Check Date"
-            value={formData.pregnancyCheckDate}
-            onChangeText={(text) => setFormData({ ...formData, pregnancyCheckDate: text })}
+            label="1PD (First Pregnancy Diagnosis)"
+            value={formData.first_pd}
+            onChangeText={(text) => setFormData({ ...formData, first_pd: text })}
             placeholder="YYYY-MM-DD"
           />
 
-          <Picker
-            label="Pregnancy Status"
-            value={formData.pregnancyStatus}
-            onValueChange={(value) => setFormData({ ...formData, pregnancyStatus: value })}
-            items={pregnancyStatusOptions}
+          <TextField
+            label="2PD (Second Pregnancy Diagnosis)"
+            value={formData.second_pd}
+            onChangeText={(text) => setFormData({ ...formData, second_pd: text })}
+            placeholder="YYYY-MM-DD"
+          />
+
+          <TextField
+            label="3PD (Third Pregnancy Diagnosis)"
+            value={formData.third_pd}
+            onChangeText={(text) => setFormData({ ...formData, third_pd: text })}
+            placeholder="YYYY-MM-DD"
+          />
+
+          <TextField
+            label="Gestation Period (days)"
+            value={formData.gestation_period.toString()}
+            onChangeText={(text) => setFormData({ ...formData, gestation_period: parseInt(text) || 0 })}
+            placeholder="Enter gestation period"
+            keyboardType="numeric"
           />
 
           <TextField
             label="Expected Calving Date"
-            value={formData.expectedCalvingDate}
-            onChangeText={(text) => setFormData({ ...formData, expectedCalvingDate: text })}
+            value={formData.expected_calving_date}
+            onChangeText={(text) => setFormData({ ...formData, expected_calving_date: text })}
             placeholder="YYYY-MM-DD"
           />
 
           <TextField
             label="Actual Calving Date"
-            value={formData.actualCalvingDate}
-            onChangeText={(text) => setFormData({ ...formData, actualCalvingDate: text })}
+            value={formData.actual_calving_date}
+            onChangeText={(text) => setFormData({ ...formData, actual_calving_date: text })}
             placeholder="YYYY-MM-DD"
-          />
-
-          <TextField
-            label="Calf Tag"
-            value={formData.calfTag}
-            onChangeText={(text) => setFormData({ ...formData, calfTag: text })}
-            placeholder="Enter calf tag number"
-          />
-
-          <Picker
-            label="Calving Difficulty"
-            value={formData.calvingDifficulty}
-            onValueChange={(value) => setFormData({ ...formData, calvingDifficulty: value })}
-            items={calvingDifficultyOptions}
-          />
-
-          <TextField
-            label="Notes"
-            value={formData.notes}
-            onChangeText={(text) => setFormData({ ...formData, notes: text })}
-            placeholder="Enter additional notes"
-            multiline
-            numberOfLines={3}
           />
         </ScrollView>
 

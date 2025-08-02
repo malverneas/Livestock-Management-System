@@ -9,16 +9,12 @@ import Colors from '../../../constants/Colors';
 
 interface FeedInventoryRecord {
   id: string;
-  feedType: string;
+  feed_type: string;
   brand: string;
-  batchNumber: string;
-  dateReceived: string;
-  expiryDate: string;
-  quantityReceived: string;
-  currentStock: string;
-  unitCost: string;
-  supplier: string;
-  storageLocation: string;
+  date_received: string;
+  expiry_date: string;
+  current_stock: number;
+  total_price: number;
 }
 
 interface FeedInventoryTableProps {
@@ -30,16 +26,26 @@ interface FeedInventoryTableProps {
 
 export function FeedInventoryTable({ data, onAdd, onEdit, onDelete }: FeedInventoryTableProps) {
   const columns = [
-    { key: 'feedType', title: 'Feed Type', width: 120 },
+    { key: 'feed_type', title: 'Feed Type', width: 120 },
     { key: 'brand', title: 'Brand', width: 100 },
-    { key: 'batchNumber', title: 'Batch #', width: 100 },
-    { key: 'dateReceived', title: 'Received', width: 100 },
-    { key: 'expiryDate', title: 'Expiry', width: 100 },
-    { key: 'quantityReceived', title: 'Received Qty', width: 100 },
-    { key: 'currentStock', title: 'Current Stock', width: 100 },
-    { key: 'unitCost', title: 'Unit Cost', width: 80 },
-    { key: 'supplier', title: 'Supplier', width: 120 },
-    { key: 'storageLocation', title: 'Location', width: 100 },
+    { key: 'date_received', title: 'Date Received', width: 120 },
+    { key: 'expiry_date', title: 'Expiry Date', width: 120 },
+    { 
+      key: 'current_stock', 
+      title: 'Current Stock (kg)', 
+      width: 140,
+      render: (value: number) => (
+        <Text variant="caption">{value} kg</Text>
+      )
+    },
+    { 
+      key: 'total_price', 
+      title: 'Total Price ($)', 
+      width: 120,
+      render: (value: number) => (
+        <Text variant="caption">${value.toFixed(2)}</Text>
+      )
+    },
     {
       key: 'actions',
       title: 'Actions',

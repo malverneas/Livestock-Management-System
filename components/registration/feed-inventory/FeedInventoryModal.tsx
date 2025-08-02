@@ -9,16 +9,12 @@ import Colors from '../../../constants/Colors';
 
 interface FeedInventoryRecord {
   id: string;
-  feedType: string;
+  feed_type: string;
   brand: string;
-  batchNumber: string;
-  dateReceived: string;
-  expiryDate: string;
-  quantityReceived: string;
-  currentStock: string;
-  unitCost: string;
-  supplier: string;
-  storageLocation: string;
+  date_received: string;
+  expiry_date: string;
+  current_stock: number;
+  total_price: number;
 }
 
 interface FeedInventoryModalProps {
@@ -41,50 +37,51 @@ const feedTypeOptions = [
 
 export function FeedInventoryModal({ visible, onClose, onSave, editRecord }: FeedInventoryModalProps) {
   const [formData, setFormData] = useState({
-    feedType: '',
+    feed_type: '',
     brand: '',
-    batchNumber: '',
-    dateReceived: '',
-    expiryDate: '',
-    quantityReceived: '',
-    currentStock: '',
-    unitCost: '',
-    supplier: '',
-    storageLocation: '',
+    date_received: '',
+    expiry_date: '',
+    quantity_to_add: 0, // New quantity to add to current stock
+    current_stock: 0,
+    total_price: 0,
   });
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        feedType: editRecord.feedType,
+        feed_type: editRecord.feed_type,
         brand: editRecord.brand,
-        batchNumber: editRecord.batchNumber,
-        dateReceived: editRecord.dateReceived,
-        expiryDate: editRecord.expiryDate,
-        quantityReceived: editRecord.quantityReceived,
-        currentStock: editRecord.currentStock,
-        unitCost: editRecord.unitCost,
-        supplier: editRecord.supplier,
-        storageLocation: editRecord.storageLocation,
+        date_received: editRecord.date_received,
+        expiry_date: editRecord.expiry_date,
+        quantity_to_add: 0,
+        current_stock: editRecord.current_stock,
+        total_price: editRecord.total_price,
       });
     } else {
       setFormData({
-        feedType: '',
+        feed_type: '',
         brand: '',
-        batchNumber: '',
-        dateReceived: '',
-        expiryDate: '',
-        quantityReceived: '',
-        currentStock: '',
-        unitCost: '',
-        supplier: '',
-        storageLocation: '',
+        date_received: '',
+        expiry_date: '',
+        quantity_to_add: 0,
+        current_stock: 0,
+        total_price: 0,
       });
     }
   }, [editRecord, visible]);
 
   const handleSave = () => {
-    onSave(formData);
+    // Add the new quantity to current stock
+    const finalRecord = {
+      ...formData,
+      current_stock: editRecord 
+        ? formData.current_stock + formData.quantity_to_add 
+        : formData.quantity_to_add,
+    };
+    
+    // Remove the temporary quantity_to_add field
+    const { quantity_to_add, ...recordToSave } = finalRecord;
+    onSave(recordToSave);
     onClose();
   };
 
@@ -93,7 +90,7 @@ export function FeedInventoryModal({ visible, onClose, onSave, editRecord }: Fee
       <View style={styles.container}>
         <View style={styles.header}>
           <Text variant="h5" weight="medium">
-            {editRecord ? 'Edit Feed Record' : 'Add Feed Record'}
+            {editRecord ? 'Update Feed Inventory' : 'Add Feed Inventory'}
           </Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <X size={24} color={Colors.neutral[600]} />
@@ -103,8 +100,8 @@ export function FeedInventoryModal({ visible, onClose, onSave, editRecord }: Fee
         <ScrollView style={styles.content}>
           <Picker
             label="Feed Type"
-            value={formData.feedType}
-            onValueChange={(value) => setFormData({ ...formData, feedType: value })}
+            value={formData.feed_type}
+            onValueChange={(value) => setFormData({ ...formData, feed_type: value })}
             items={feedTypeOptions}
           />
 
@@ -116,62 +113,41 @@ export function FeedInventoryModal({ visible, onClose, onSave, editRecord }: Fee
           />
 
           <TextField
-            label="Batch Number"
-            value={formData.batchNumber}
-            onChangeText={(text) => setFormData({ ...formData, batchNumber: text })}
-            placeholder="Enter batch number"
-          />
-
-          <TextField
             label="Date Received"
-            value={formData.dateReceived}
-            onChangeText={(text) => setFormData({ ...formData, dateReceived: text })}
+            value={formData.date_received}
+            onChangeText={(text) => setFormData({ ...formData, date_received: text })}
             placeholder="YYYY-MM-DD"
           />
 
           <TextField
             label="Expiry Date"
-            value={formData.expiryDate}
-            onChangeText={(text) => setFormData({ ...formData, expiryDate: text })}
+            value={formData.expiry_date}
+            onChangeText={(text) => setFormData({ ...formData, expiry_date: text })}
             placeholder="YYYY-MM-DD"
           />
 
+          {editRecord && (
+            <View style={styles.stockInfo}>
+              <Text variant="body2" color="neutral.600">
+                Current Stock: {formData.current_stock} kg
+              </Text>
+            </View>
+          )}
+
           <TextField
-            label="Quantity Received (kg)"
-            value={formData.quantityReceived}
-            onChangeText={(text) => setFormData({ ...formData, quantityReceived: text })}
-            placeholder="Enter quantity received"
+            label={editRecord ? "Quantity to Add (kg)" : "Initial Stock (kg)"}
+            value={formData.quantity_to_add.toString()}
+            onChangeText={(text) => setFormData({ ...formData, quantity_to_add: parseFloat(text) || 0 })}
+            placeholder={editRecord ? "Enter quantity to add" : "Enter initial stock"}
             keyboardType="numeric"
           />
 
           <TextField
-            label="Current Stock (kg)"
-            value={formData.currentStock}
-            onChangeText={(text) => setFormData({ ...formData, currentStock: text })}
-            placeholder="Enter current stock"
+            label="Total Price ($)"
+            value={formData.total_price.toString()}
+            onChangeText={(text) => setFormData({ ...formData, total_price: parseFloat(text) || 0 })}
+            placeholder="Enter total price"
             keyboardType="numeric"
-          />
-
-          <TextField
-            label="Unit Cost ($)"
-            value={formData.unitCost}
-            onChangeText={(text) => setFormData({ ...formData, unitCost: text })}
-            placeholder="Enter unit cost"
-            keyboardType="numeric"
-          />
-
-          <TextField
-            label="Supplier"
-            value={formData.supplier}
-            onChangeText={(text) => setFormData({ ...formData, supplier: text })}
-            placeholder="Enter supplier name"
-          />
-
-          <TextField
-            label="Storage Location"
-            value={formData.storageLocation}
-            onChangeText={(text) => setFormData({ ...formData, storageLocation: text })}
-            placeholder="Enter storage location"
           />
         </ScrollView>
 
@@ -207,6 +183,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+  },
+  stockInfo: {
+    padding: 12,
+    backgroundColor: Colors.neutral[50],
+    borderRadius: 8,
+    marginBottom: 16,
   },
   footer: {
     flexDirection: 'row',

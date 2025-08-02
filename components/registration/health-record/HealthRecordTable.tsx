@@ -9,17 +9,15 @@ import Colors from '../../../constants/Colors';
 
 interface HealthRecord {
   id: string;
-  animalTag: string;
-  treatmentDate: string;
-  treatmentType: string;
+  date: string;
+  event_type: string;
+  event: string;
+  tag: string;
   diagnosis: string;
   treatment: string;
-  veterinarian: string;
-  drugUsed: string;
-  dosage: string;
-  withdrawalPeriod: string;
-  followUpDate: string;
-  notes: string;
+  drug_administering: string;
+  special_notes: string;
+  done_by: string;
 }
 
 interface HealthRecordTableProps {
@@ -31,16 +29,15 @@ interface HealthRecordTableProps {
 
 export function HealthRecordTable({ data, onAdd, onEdit, onDelete }: HealthRecordTableProps) {
   const columns = [
-    { key: 'animalTag', title: 'Animal Tag', width: 100 },
-    { key: 'treatmentDate', title: 'Date', width: 100 },
-    { key: 'treatmentType', title: 'Type', width: 100 },
+    { key: 'date', title: 'Date', width: 100 },
+    { key: 'event_type', title: 'Event Type', width: 100 },
+    { key: 'event', title: 'Event', width: 120 },
+    { key: 'tag', title: 'Tag', width: 80 },
     { key: 'diagnosis', title: 'Diagnosis', width: 120 },
     { key: 'treatment', title: 'Treatment', width: 120 },
-    { key: 'veterinarian', title: 'Veterinarian', width: 120 },
-    { key: 'drugUsed', title: 'Drug Used', width: 100 },
-    { key: 'dosage', title: 'Dosage', width: 80 },
-    { key: 'withdrawalPeriod', title: 'Withdrawal', width: 100 },
-    { key: 'followUpDate', title: 'Follow Up', width: 100 },
+    { key: 'drug_administering', title: 'Drug', width: 100 },
+    { key: 'special_notes', title: 'Notes', width: 120 },
+    { key: 'done_by', title: 'Done By', width: 100 },
     {
       key: 'actions',
       title: 'Actions',
@@ -68,7 +65,7 @@ export function HealthRecordTable({ data, onAdd, onEdit, onDelete }: HealthRecor
     <Card style={styles.container}>
       <View style={styles.header}>
         <Text variant="h6" weight="medium">
-          Health Record
+          Health Records
         </Text>
         <Button
           variant="primary"
@@ -76,7 +73,7 @@ export function HealthRecordTable({ data, onAdd, onEdit, onDelete }: HealthRecor
           startIcon={<Plus size={16} color={Colors.white} />}
           onPress={onAdd}
         >
-          Add Treatment
+          Add Record
         </Button>
       </View>
       <DataTable columns={columns} data={data} />

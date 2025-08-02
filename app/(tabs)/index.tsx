@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, Text as RNText } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
+import { Redirect } from 'expo-router';
 
 import { router } from 'expo-router';
 import { Bell, Heart, Dna, Wheat, BarChart3, ClipboardList, FileEdit, ShoppingCart, Settings, User, TrendingUp } from 'lucide-react-native';
@@ -9,6 +10,7 @@ import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { Picker } from '../../components/inputs/Picker';
 import { Card } from '../../components/ui/Card';
+import { useAuth } from '../../contexts/AuthContext';
 import Colors from '../../constants/Colors';
 import { ColorValue } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -157,6 +159,23 @@ export default function HomeScreen() {
   const [selectedSpecies, setSelectedSpecies] = useState<string>('beef-cattle');
   const [activeSlide, setActiveSlide] = useState(0);
   const [timeframe, setTimeframe] = useState<'monthly' | 'yearly'>('monthly');
+  const { user, loading } = useAuth();
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <ScreenContainer style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text variant="h6">Loading...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   const renderNavigationCard = ({ item }: { item: NavigationCard }) => (
     <TouchableOpacity
@@ -198,7 +217,7 @@ export default function HomeScreen() {
                 Welcome back,
               </Text>
               <Text variant="h5" weight="bold">
-                John Farmer
+                {user.user_metadata?.name || user.email}
               </Text>
             </View>
           </View>
@@ -576,5 +595,10 @@ const styles = StyleSheet.create({
   cardDescription: {
     fontSize: 12,
     lineHeight: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

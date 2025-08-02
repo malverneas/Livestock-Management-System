@@ -9,15 +9,15 @@ import Colors from '../../../constants/Colors';
 
 interface BreedingSoundnessRecord {
   id: string;
-  bullTag: string;
-  evaluationDate: string;
-  veterinarian: string;
-  physicalExam: string;
-  reproductiveExam: string;
-  semenQuality: string;
-  overallClassification: string;
-  recommendations: string;
-  nextEvaluationDate: string;
+  tag: string;
+  age: number;
+  pe: string;
+  sperm_mortality: string;
+  sperm_morphology: number;
+  scrotal: number;
+  libido: string;
+  score: number;
+  classification: string;
 }
 
 interface BreedingSoundnessTableProps {
@@ -29,14 +29,29 @@ interface BreedingSoundnessTableProps {
 
 export function BreedingSoundnessTable({ data, onAdd, onEdit, onDelete }: BreedingSoundnessTableProps) {
   const columns = [
-    { key: 'bullTag', title: 'Bull Tag', width: 100 },
-    { key: 'evaluationDate', title: 'Eval Date', width: 100 },
-    { key: 'veterinarian', title: 'Veterinarian', width: 120 },
-    { key: 'physicalExam', title: 'Physical', width: 80 },
-    { key: 'reproductiveExam', title: 'Reproductive', width: 100 },
-    { key: 'semenQuality', title: 'Semen', width: 80 },
-    { key: 'overallClassification', title: 'Classification', width: 120 },
-    { key: 'nextEvaluationDate', title: 'Next Eval', width: 100 },
+    { key: 'tag', title: 'Tag', width: 80 },
+    { key: 'age', title: 'Age', width: 60 },
+    { key: 'pe', title: 'PE', width: 80 },
+    { key: 'sperm_mortality', title: 'Sperm Mortality', width: 120 },
+    { 
+      key: 'sperm_morphology', 
+      title: 'Sperm Morphology (%)', 
+      width: 140,
+      render: (value: number) => (
+        <Text variant="caption">{value}%</Text>
+      )
+    },
+    { 
+      key: 'scrotal', 
+      title: 'Scrotal (cm)', 
+      width: 100,
+      render: (value: number) => (
+        <Text variant="caption">{value} cm</Text>
+      )
+    },
+    { key: 'libido', title: 'Libido', width: 80 },
+    { key: 'score', title: 'Score', width: 80 },
+    { key: 'classification', title: 'Classification', width: 120 },
     {
       key: 'actions',
       title: 'Actions',

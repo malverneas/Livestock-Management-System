@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import Colors from '../../constants/Colors';
 import { Stack } from 'expo-router';
+import { useHerd } from '../../contexts/HerdContext';
+import { useCalf } from '../../contexts/CalfContext';
 
 // Import all the table components
 import { HerdRegisterTable } from '../../components/registration/herd-register/HerdRegisterTable';
@@ -27,166 +28,21 @@ import { FeedInventoryTable } from '../../components/registration/feed-inventory
 import { FeedInventoryModal } from '../../components/registration/feed-inventory/FeedInventoryModal';
 import { HealthRecordTable } from '../../components/registration/health-record/HealthRecordTable';
 import { HealthRecordModal } from '../../components/registration/health-record/HealthRecordModal';
+import { WeightRecordsTable } from '../../components/registration/weight-records/WeightRecordsTable';
+import { WeightRecordsModal } from '../../components/registration/weight-records/WeightRecordsModal';
 
-// Sample data for each register
-const sampleHerdData = [
-  {
-    id: '1',
-    tagNumber: 'H001',
-    breed: 'brahman',
-    dateOfBirth: '2020-03-15',
-    sex: 'female',
-    dam: 'H050',
-    sire: 'B001',
-    weight: '450',
-    status: 'active',
-  },
-  {
-    id: '2',
-    tagNumber: 'H002',
-    breed: 'mashona',
-    dateOfBirth: '2019-08-22',
-    sex: 'male',
-    dam: 'H051',
-    sire: 'B002',
-    weight: '520',
-    status: 'active',
-  },
-];
-
-const sampleCalfData = [
-  {
-    id: '1',
-    tagNumber: 'C001',
-    dateOfBirth: '2024-01-15',
-    sex: 'female',
-    dam: 'H001',
-    sire: 'B001',
-    birthWeight: '35',
-    weaningWeight: '180',
-    weaningDate: '2024-07-15',
-  },
-];
-
-const sampleDrugData = [
-  {
-    id: '1',
-    drugName: 'Ivermectin',
-    batchNumber: 'IV2024001',
-    expiryDate: '2025-12-31',
-    quantity: '500ml',
-    supplier: 'VetSupply Co.',
-    dateReceived: '2024-01-10',
-    cost: '45.00',
-    withdrawalPeriod: '28',
-  },
-];
-
-const sampleHeatDetectionData = [
-  {
-    id: '1',
-    animalTag: 'H001',
-    heatDate: '2024-06-15',
-    observer: 'John Smith',
-    intensity: 'strong',
-    breedingDate: '2024-06-16',
-    bullUsed: 'B001',
-    notes: 'Good standing heat observed',
-  },
-];
-
-const sampleMortalityData = [
-  {
-    id: '1',
-    animalTag: 'H003',
-    dateOfEvent: '2024-05-20',
-    eventType: 'death',
-    cause: 'Disease',
-    weight: '400',
-    value: '1200.00',
-    disposalMethod: 'burial',
-    notes: 'Sudden illness',
-  },
-];
-
-const samplePregnancyData = [
-  {
-    id: '1',
-    animalTag: 'H001',
-    breedingDate: '2024-03-15',
-    bullUsed: 'B001',
-    pregnancyCheckDate: '2024-05-15',
-    pregnancyStatus: 'pregnant',
-    expectedCalvingDate: '2024-12-15',
-    actualCalvingDate: '',
-    calfTag: '',
-    calvingDifficulty: '',
-    notes: 'First pregnancy',
-  },
-];
-
-const sampleSalesData = [
-  {
-    id: '1',
-    animalTag: 'H004',
-    transactionDate: '2024-06-01',
-    transactionType: 'sale',
-    buyer: 'Local Butcher',
-    weight: '480',
-    pricePerKg: '8.50',
-    totalPrice: '4080.00',
-    paymentMethod: 'cash',
-    notes: 'Good condition',
-  },
-];
-
-const sampleBreedingSoundnessData = [
-  {
-    id: '1',
-    bullTag: 'B001',
-    evaluationDate: '2024-06-15',
-    veterinarian: 'Dr. Smith',
-    physicalExam: 'pass',
-    reproductiveExam: 'pass',
-    semenQuality: 'pass',
-    overallClassification: 'satisfactory',
-    recommendations: 'Continue breeding program',
-    nextEvaluationDate: '2025-06-15',
-  },
-];
-
-const sampleFeedInventoryData = [
-  {
-    id: '1',
-    feedType: 'dairy_meal',
-    brand: 'ProFeed',
-    batchNumber: 'DF2024001',
-    dateReceived: '2024-06-01',
-    expiryDate: '2024-12-01',
-    quantityReceived: '1000',
-    currentStock: '750',
-    unitCost: '45.00',
-    supplier: 'Feed Supply Co.',
-    storageLocation: 'Warehouse A',
-  },
-];
-
-const sampleHealthRecordData = [
-  {
-    id: '1',
-    animalTag: 'H001',
-    treatmentDate: '2024-06-10',
-    treatmentType: 'vaccination',
-    diagnosis: 'Preventive care',
-    treatment: 'FMD Vaccine',
-    veterinarian: 'Dr. Johnson',
-    drugUsed: 'FMD Vaccine',
-    dosage: '2ml',
-    withdrawalPeriod: '0',
-    followUpDate: '2025-06-10',
-    notes: 'Annual vaccination',
-  },
-];
+// Sample data for registers not yet connected to context
+const sampleData = {
+  drug: [],
+  heatDetection: [],
+  mortality: [],
+  pregnancy: [],
+  sales: [],
+  breedingSoundness: [],
+  feedInventory: [],
+  healthRecord: [],
+  weightRecords: [],
+};
 
 export default function RegisterScreen() {
   return (
@@ -202,7 +58,9 @@ export default function RegisterScreen() {
 }
 
 function RegisterContent() {
-  const params = useLocalSearchParams();
+  const { herdData, addRecord: addHerdRecord, updateRecord: updateHerdRecord, deleteRecord: deleteHerdRecord } = useHerd();
+  const { calfData, addRecord: addCalfRecord, updateRecord: updateCalfRecord, deleteRecord: deleteCalfRecord } = useCalf();
+  
   const [activeTab, setActiveTab] = useState('herd');
   
   // Modal states for each register
@@ -216,6 +74,7 @@ function RegisterContent() {
   const [breedingSoundnessModalVisible, setBreedingSoundnessModalVisible] = useState(false);
   const [feedInventoryModalVisible, setFeedInventoryModalVisible] = useState(false);
   const [healthRecordModalVisible, setHealthRecordModalVisible] = useState(false);
+  const [weightRecordsModalVisible, setWeightRecordsModalVisible] = useState(false);
   
   // Edit record states
   const [editingHerdRecord, setEditingHerdRecord] = useState(null);
@@ -228,26 +87,18 @@ function RegisterContent() {
   const [editingBreedingSoundnessRecord, setEditingBreedingSoundnessRecord] = useState(null);
   const [editingFeedInventoryRecord, setEditingFeedInventoryRecord] = useState(null);
   const [editingHealthRecord, setEditingHealthRecord] = useState(null);
+  const [editingWeightRecord, setEditingWeightRecord] = useState(null);
   
   // Data states
-  const [herdData, setHerdData] = useState(sampleHerdData);
-  const [calfData, setCalfData] = useState(sampleCalfData);
-  const [drugData, setDrugData] = useState(sampleDrugData);
-  const [heatDetectionData, setHeatDetectionData] = useState(sampleHeatDetectionData);
-  const [mortalityData, setMortalityData] = useState(sampleMortalityData);
-  const [pregnancyData, setPregnancyData] = useState(samplePregnancyData);
-  const [salesData, setSalesData] = useState(sampleSalesData);
-  const [breedingSoundnessData, setBreedingSoundnessData] = useState(sampleBreedingSoundnessData);
-  const [feedInventoryData, setFeedInventoryData] = useState(sampleFeedInventoryData);
-  const [healthRecordData, setHealthRecordData] = useState(sampleHealthRecordData);
-
-  // Handle scroll to specific bull if coming from genetics screen
-  React.useEffect(() => {
-    if (params.scrollToBull) {
-      // Handle scrolling to specific bull record
-      console.log('Scrolling to bull:', params.scrollToBull);
-    }
-  }, [params.scrollToBull]);
+  const [drugData, setDrugData] = useState(sampleData.drug);
+  const [heatDetectionData, setHeatDetectionData] = useState(sampleData.heatDetection);
+  const [mortalityData, setMortalityData] = useState(sampleData.mortality);
+  const [pregnancyData, setPregnancyData] = useState(sampleData.pregnancy);
+  const [salesData, setSalesData] = useState(sampleData.sales);
+  const [breedingSoundnessData, setBreedingSoundnessData] = useState(sampleData.breedingSoundness);
+  const [feedInventoryData, setFeedInventoryData] = useState(sampleData.feedInventory);
+  const [healthRecordData, setHealthRecordData] = useState(sampleData.healthRecord);
+  const [weightRecordsData, setWeightRecordsData] = useState(sampleData.weightRecords);
 
   // Herd Register handlers
   const handleAddHerd = () => {
@@ -260,17 +111,15 @@ function RegisterContent() {
     setHerdModalVisible(true);
   };
 
-  const handleDeleteHerd = (id: string) => {
-    setHerdData(herdData.filter(item => item.id !== id));
+  const handleDeleteHerd = async (id: string) => {
+    await deleteHerdRecord(id);
   };
 
-  const handleSaveHerd = (record: any) => {
+  const handleSaveHerd = async (record: any) => {
     if (editingHerdRecord) {
-      setHerdData(herdData.map(item => 
-        item.id === editingHerdRecord.id ? { ...record, id: editingHerdRecord.id } : item
-      ));
+      await updateHerdRecord(editingHerdRecord.id, record);
     } else {
-      setHerdData([...herdData, { ...record, id: Date.now().toString() }]);
+      await addHerdRecord(record);
     }
   };
 
@@ -285,17 +134,15 @@ function RegisterContent() {
     setCalfModalVisible(true);
   };
 
-  const handleDeleteCalf = (id: string) => {
-    setCalfData(calfData.filter(item => item.id !== id));
+  const handleDeleteCalf = async (id: string) => {
+    await deleteCalfRecord(id);
   };
 
-  const handleSaveCalf = (record: any) => {
+  const handleSaveCalf = async (record: any) => {
     if (editingCalfRecord) {
-      setCalfData(calfData.map(item => 
-        item.id === editingCalfRecord.id ? { ...record, id: editingCalfRecord.id } : item
-      ));
+      await updateCalfRecord(editingCalfRecord.id, record);
     } else {
-      setCalfData([...calfData, { ...record, id: Date.now().toString() }]);
+      await addCalfRecord(record);
     }
   };
 
@@ -499,6 +346,31 @@ function RegisterContent() {
     }
   };
 
+  // Weight Records handlers
+  const handleAddWeightRecord = () => {
+    setEditingWeightRecord(null);
+    setWeightRecordsModalVisible(true);
+  };
+
+  const handleEditWeightRecord = (record: any) => {
+    setEditingWeightRecord(record);
+    setWeightRecordsModalVisible(true);
+  };
+
+  const handleDeleteWeightRecord = (id: string) => {
+    setWeightRecordsData(weightRecordsData.filter(item => item.id !== id));
+  };
+
+  const handleSaveWeightRecord = (record: any) => {
+    if (editingWeightRecord) {
+      setWeightRecordsData(weightRecordsData.map(item => 
+        item.id === editingWeightRecord.id ? { ...record, id: editingWeightRecord.id } : item
+      ));
+    } else {
+      setWeightRecordsData([...weightRecordsData, { ...record, id: Date.now().toString() }]);
+    }
+  };
+
   const tabs = [
     { id: 'herd', title: 'Herd Register' },
     { id: 'calf', title: 'Calf Register' },
@@ -510,6 +382,7 @@ function RegisterContent() {
     { id: 'feed', title: 'Feed Inventory' },
     { id: 'health', title: 'Health Record' },
     { id: 'heat', title: 'Heat Detection' },
+    { id: 'weight', title: 'Weight Records' },
   ];
 
   const renderContent = () => {
@@ -681,6 +554,23 @@ function RegisterContent() {
               onClose={() => setHealthRecordModalVisible(false)}
               onSave={handleSaveHealthRecord}
               editRecord={editingHealthRecord}
+            />
+          </>
+        );
+      case 'weight':
+        return (
+          <>
+            <WeightRecordsTable
+              data={weightRecordsData}
+              onAdd={handleAddWeightRecord}
+              onEdit={handleEditWeightRecord}
+              onDelete={handleDeleteWeightRecord}
+            />
+            <WeightRecordsModal
+              visible={weightRecordsModalVisible}
+              onClose={() => setWeightRecordsModalVisible(false)}
+              onSave={handleSaveWeightRecord}
+              editRecord={editingWeightRecord}
             />
           </>
         );

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
+import { router, Redirect } from 'expo-router';
 import { KeyRound, Mail, User } from 'lucide-react-native';
 import { Text } from '@/components/typography/Text';
 import { TextField } from '@/components/inputs/TextField';
 import { Button } from '@/components/ui/Button';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { Header } from '@/components/layout/Header';
+import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/Colors';
 
 export default function SignupScreen() {
@@ -15,14 +16,31 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { signUp, user } = useAuth();
 
-  const handleSignup = () => {
+  // Redirect if already logged in
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
-    // Simulate signup
-    setTimeout(() => {
+    setError('');
+    
+    const { error } = await signUp(email, password, name);
+    
+    if (error) {
+      setError(error.message);
       setLoading(false);
+    } else {
       router.replace('/(tabs)');
-    }, 1500);
+    }
   };
 
   return (
@@ -44,6 +62,7 @@ export default function SignupScreen() {
           onChangeText={setName}
           startIcon={<User size={20} color={Colors.neutral[500]} />}
           containerStyle={styles.inputContainer}
+          error={error && name === '' ? 'Name is required' : ''}
         />
 
         <TextField
@@ -55,6 +74,7 @@ export default function SignupScreen() {
           autoCapitalize="none"
           startIcon={<Mail size={20} color={Colors.neutral[500]} />}
           containerStyle={styles.inputContainer}
+          error={error && email === '' ? 'Email is required' : ''}
         />
 
         <TextField
@@ -65,6 +85,7 @@ export default function SignupScreen() {
           isPassword
           startIcon={<KeyRound size={20} color={Colors.neutral[500]} />}
           containerStyle={styles.inputContainer}
+          error={error && password === '' ? 'Password is required' : ''}
         />
 
         <TextField
@@ -75,7 +96,16 @@ export default function SignupScreen() {
           isPassword
           startIcon={<KeyRound size={20} color={Colors.neutral[500]} />}
           containerStyle={styles.inputContainer}
+          error={password !== confirmPassword ? 'Passwords do not match' : ''}
         />
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text variant="body2" color="error.500">
+              {error}
+            </Text>
+          </View>
+        )}
 
         <Button
           variant="primary"
@@ -122,5 +152,8 @@ const styles = StyleSheet.create({
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+  },
+  errorContainer: {
+    marginBottom: 16,
   },
 });

@@ -6,62 +6,51 @@ import { Picker } from '../../inputs/Picker';
 import { Button } from '../../ui/Button';
 import { X } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
+import { useHerd } from '../../../contexts/HerdContext';
 
-interface HerdRecord {
+interface WeightRecord {
   id: string;
-  tag_number: string;
-  breed: string;
-  age: number;
-  sex: string;
+  animal_tag: string;
+  weight_date: string;
+  weight: number;
+  notes: string;
 }
 
-interface HerdRegisterModalProps {
+interface WeightRecordsModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (record: Omit<HerdRecord, 'id'>) => void;
-  editRecord?: HerdRecord | null;
+  onSave: (record: Omit<WeightRecord, 'id'>) => void;
+  editRecord?: WeightRecord | null;
 }
 
-const breedOptions = [
-  { label: 'Brahman', value: 'brahman' },
-  { label: 'Mashona', value: 'mashona' },
-  { label: 'Ankole', value: 'ankole' },
-  { label: 'Cross', value: 'cross' },
-];
-
-const sexOptions = [
-  { label: 'Male', value: 'male' },
-  { label: 'Female', value: 'female' },
-];
-
-const statusOptions = [
-  { label: 'Active', value: 'active' },
-  { label: 'Sold', value: 'sold' },
-  { label: 'Deceased', value: 'deceased' },
-];
-
-export function HerdRegisterModal({ visible, onClose, onSave, editRecord }: HerdRegisterModalProps) {
+export function WeightRecordsModal({ visible, onClose, onSave, editRecord }: WeightRecordsModalProps) {
+  const { herdData } = useHerd();
   const [formData, setFormData] = useState({
-    tag_number: '',
-    breed: '',
-    age: 0,
-    sex: '',
+    animal_tag: '',
+    weight_date: '',
+    weight: 0,
+    notes: '',
   });
+
+  const animalOptions = herdData.map(animal => ({
+    label: `${animal.tag_number} (${animal.breed}, ${animal.sex})`,
+    value: animal.tag_number,
+  }));
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        tag_number: editRecord.tag_number,
-        breed: editRecord.breed,
-        age: editRecord.age,
-        sex: editRecord.sex,
+        animal_tag: editRecord.animal_tag,
+        weight_date: editRecord.weight_date,
+        weight: editRecord.weight,
+        notes: editRecord.notes,
       });
     } else {
       setFormData({
-        tag_number: '',
-        breed: '',
-        age: 0,
-        sex: '',
+        animal_tag: '',
+        weight_date: '',
+        weight: 0,
+        notes: '',
       });
     }
   }, [editRecord, visible]);
@@ -76,7 +65,7 @@ export function HerdRegisterModal({ visible, onClose, onSave, editRecord }: Herd
       <View style={styles.container}>
         <View style={styles.header}>
           <Text variant="h5" weight="medium">
-            {editRecord ? 'Edit Animal' : 'Add New Animal'}
+            {editRecord ? 'Edit Weight Record' : 'Add Weight Record'}
           </Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <X size={24} color={Colors.neutral[600]} />
@@ -84,33 +73,35 @@ export function HerdRegisterModal({ visible, onClose, onSave, editRecord }: Herd
         </View>
 
         <ScrollView style={styles.content}>
-          <TextField
-            label="Tag Number"
-            value={formData.tag_number}
-            onChangeText={(text) => setFormData({ ...formData, tag_number: text })}
-            placeholder="Enter tag number"
-          />
-
           <Picker
-            label="Breed"
-            value={formData.breed}
-            onValueChange={(value) => setFormData({ ...formData, breed: value })}
-            items={breedOptions}
+            label="Animal Tag"
+            value={formData.animal_tag}
+            onValueChange={(value) => setFormData({ ...formData, animal_tag: value })}
+            items={animalOptions}
           />
 
           <TextField
-            label="Age (years)"
-            value={formData.age.toString()}
-            onChangeText={(text) => setFormData({ ...formData, age: parseInt(text) || 0 })}
-            placeholder="Enter age in years"
+            label="Weight Date"
+            value={formData.weight_date}
+            onChangeText={(text) => setFormData({ ...formData, weight_date: text })}
+            placeholder="YYYY-MM-DD"
+          />
+
+          <TextField
+            label="Weight (kg)"
+            value={formData.weight.toString()}
+            onChangeText={(text) => setFormData({ ...formData, weight: parseFloat(text) || 0 })}
+            placeholder="Enter weight"
             keyboardType="numeric"
           />
 
-          <Picker
-            label="Sex"
-            value={formData.sex}
-            onValueChange={(value) => setFormData({ ...formData, sex: value })}
-            items={sexOptions}
+          <TextField
+            label="Notes"
+            value={formData.notes}
+            onChangeText={(text) => setFormData({ ...formData, notes: text })}
+            placeholder="Enter additional notes"
+            multiline
+            numberOfLines={3}
           />
         </ScrollView>
 

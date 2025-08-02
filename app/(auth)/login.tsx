@@ -1,25 +1,38 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
+import { router, Redirect } from 'expo-router';
 import { KeyRound, Mail } from 'lucide-react-native';
 import { Text } from '@/components/typography/Text';
 import { TextField } from '@/components/inputs/TextField';
 import { Button } from '@/components/ui/Button';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
+import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/Colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { signIn, user } = useAuth();
 
-  const handleLogin = () => {
+  // Redirect if already logged in
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  const handleLogin = async () => {
     setLoading(true);
-    // Simulate login
-    setTimeout(() => {
+    setError('');
+    
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      setError(error.message);
       setLoading(false);
+    } else {
       router.replace('/(tabs)');
-    }, 1500);
+    }
   };
 
   return (
@@ -55,6 +68,7 @@ export default function LoginScreen() {
           autoCapitalize="none"
           startIcon={<Mail size={20} color={Colors.neutral[500]} />}
           containerStyle={styles.inputContainer}
+          error={error && email === '' ? 'Email is required' : ''}
         />
 
         <TextField
@@ -65,7 +79,16 @@ export default function LoginScreen() {
           isPassword
           startIcon={<KeyRound size={20} color={Colors.neutral[500]} />}
           containerStyle={styles.inputContainer}
+          error={error && password === '' ? 'Password is required' : ''}
         />
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text variant="body2" color="error.500">
+              {error}
+            </Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={styles.forgotPasswordContainer}
@@ -153,5 +176,8 @@ const styles = StyleSheet.create({
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+  },
+  errorContainer: {
+    marginBottom: 16,
   },
 });

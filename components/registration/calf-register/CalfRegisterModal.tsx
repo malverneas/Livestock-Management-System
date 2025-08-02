@@ -9,14 +9,12 @@ import Colors from '../../../constants/Colors';
 
 interface CalfRecord {
   id: string;
-  tagNumber: string;
-  dateOfBirth: string;
+  tag_number: string;
+  age: number;
   sex: string;
-  dam: string;
-  sire: string;
-  birthWeight: string;
-  weaningWeight: string;
-  weaningDate: string;
+  birth_weight: number;
+  weaning_weight: number;
+  weaning_date: string;
 }
 
 interface CalfRegisterModalProps {
@@ -33,38 +31,32 @@ const sexOptions = [
 
 export function CalfRegisterModal({ visible, onClose, onSave, editRecord }: CalfRegisterModalProps) {
   const [formData, setFormData] = useState({
-    tagNumber: '',
-    dateOfBirth: '',
+    tag_number: '',
+    age: 0,
     sex: '',
-    dam: '',
-    sire: '',
-    birthWeight: '',
-    weaningWeight: '',
-    weaningDate: '',
+    birth_weight: 0,
+    weaning_weight: 0,
+    weaning_date: '',
   });
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        tagNumber: editRecord.tagNumber,
-        dateOfBirth: editRecord.dateOfBirth,
+        tag_number: editRecord.tag_number,
+        age: editRecord.age,
         sex: editRecord.sex,
-        dam: editRecord.dam,
-        sire: editRecord.sire,
-        birthWeight: editRecord.birthWeight,
-        weaningWeight: editRecord.weaningWeight,
-        weaningDate: editRecord.weaningDate,
+        birth_weight: editRecord.birth_weight,
+        weaning_weight: editRecord.weaning_weight,
+        weaning_date: editRecord.weaning_date,
       });
     } else {
       setFormData({
-        tagNumber: '',
-        dateOfBirth: '',
+        tag_number: '',
+        age: 0,
         sex: '',
-        dam: '',
-        sire: '',
-        birthWeight: '',
-        weaningWeight: '',
-        weaningDate: '',
+        birth_weight: 0,
+        weaning_weight: 0,
+        weaning_date: '',
       });
     }
   }, [editRecord, visible]);
@@ -89,16 +81,17 @@ export function CalfRegisterModal({ visible, onClose, onSave, editRecord }: Calf
         <ScrollView style={styles.content}>
           <TextField
             label="Tag Number"
-            value={formData.tagNumber}
-            onChangeText={(text) => setFormData({ ...formData, tagNumber: text })}
+            value={formData.tag_number}
+            onChangeText={(text) => setFormData({ ...formData, tag_number: text })}
             placeholder="Enter calf tag number"
           />
 
           <TextField
-            label="Date of Birth"
-            value={formData.dateOfBirth}
-            onChangeText={(text) => setFormData({ ...formData, dateOfBirth: text })}
-            placeholder="YYYY-MM-DD"
+            label="Age (months)"
+            value={formData.age.toString()}
+            onChangeText={(text) => setFormData({ ...formData, age: parseInt(text) || 0 })}
+            placeholder="Enter age in months"
+            keyboardType="numeric"
           />
 
           <Picker
@@ -109,39 +102,25 @@ export function CalfRegisterModal({ visible, onClose, onSave, editRecord }: Calf
           />
 
           <TextField
-            label="Dam (Mother)"
-            value={formData.dam}
-            onChangeText={(text) => setFormData({ ...formData, dam: text })}
-            placeholder="Enter dam tag number"
-          />
-
-          <TextField
-            label="Sire (Father)"
-            value={formData.sire}
-            onChangeText={(text) => setFormData({ ...formData, sire: text })}
-            placeholder="Enter sire tag number"
-          />
-
-          <TextField
             label="Birth Weight (kg)"
-            value={formData.birthWeight}
-            onChangeText={(text) => setFormData({ ...formData, birthWeight: text })}
+            value={formData.birth_weight.toString()}
+            onChangeText={(text) => setFormData({ ...formData, birth_weight: parseFloat(text) || 0 })}
             placeholder="Enter birth weight"
             keyboardType="numeric"
           />
 
           <TextField
             label="Weaning Weight (kg)"
-            value={formData.weaningWeight}
-            onChangeText={(text) => setFormData({ ...formData, weaningWeight: text })}
+            value={formData.weaning_weight.toString()}
+            onChangeText={(text) => setFormData({ ...formData, weaning_weight: parseFloat(text) || 0 })}
             placeholder="Enter weaning weight"
             keyboardType="numeric"
           />
 
           <TextField
             label="Weaning Date"
-            value={formData.weaningDate}
-            onChangeText={(text) => setFormData({ ...formData, weaningDate: text })}
+            value={formData.weaning_date}
+            onChangeText={(text) => setFormData({ ...formData, weaning_date: text })}
             placeholder="YYYY-MM-DD"
           />
         </ScrollView>

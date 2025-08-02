@@ -9,13 +9,22 @@ import Colors from '../../../constants/Colors';
 
 interface HeatDetectionRecord {
   id: string;
-  animalTag: string;
-  heatDate: string;
+  tag: string;
+  stock_type: string;
+  body_condition_score: number;
+  heat_detection_date: string;
   observer: string;
-  intensity: string;
-  breedingDate: string;
-  bullUsed: string;
-  notes: string;
+  serviced_date: string;
+  breeding_status: string;
+  breeding_method: string;
+  ai_technician: string;
+  sire_id_straw_id: string;
+  semen_viability: string;
+  return_to_heat_date_1: string;
+  date_served: string;
+  breeding_method_2: string;
+  sire_used: string;
+  return_to_heat_date_2: string;
 }
 
 interface HeatDetectionTableProps {
@@ -27,13 +36,29 @@ interface HeatDetectionTableProps {
 
 export function HeatDetectionTable({ data, onAdd, onEdit, onDelete }: HeatDetectionTableProps) {
   const columns = [
-    { key: 'animalTag', title: 'Animal Tag', width: 100 },
-    { key: 'heatDate', title: 'Heat Date', width: 100 },
+    { key: 'tag', title: 'Tag', width: 80 },
+    { key: 'stock_type', title: 'Stock Type', width: 100 },
+    { 
+      key: 'body_condition_score', 
+      title: 'BCS', 
+      width: 60,
+      render: (value: number) => (
+        <Text variant="caption">{value}</Text>
+      )
+    },
+    { key: 'heat_detection_date', title: 'Heat Date', width: 100 },
     { key: 'observer', title: 'Observer', width: 100 },
-    { key: 'intensity', title: 'Intensity', width: 80 },
-    { key: 'breedingDate', title: 'Breeding Date', width: 100 },
-    { key: 'bullUsed', title: 'Bull Used', width: 100 },
-    { key: 'notes', title: 'Notes', width: 120 },
+    { key: 'serviced_date', title: 'Serviced Date', width: 110 },
+    { key: 'breeding_status', title: 'Breeding Status', width: 120 },
+    { key: 'breeding_method', title: 'Method 1', width: 100 },
+    { key: 'ai_technician', title: 'AI Tech', width: 100 },
+    { key: 'sire_id_straw_id', title: 'Sire/Straw ID', width: 120 },
+    { key: 'semen_viability', title: 'Semen Viability', width: 120 },
+    { key: 'return_to_heat_date_1', title: 'Return Heat 1', width: 120 },
+    { key: 'date_served', title: 'Date Served', width: 110 },
+    { key: 'breeding_method_2', title: 'Method 2', width: 100 },
+    { key: 'sire_used', title: 'Sire Used', width: 100 },
+    { key: 'return_to_heat_date_2', title: 'Return Heat 2', width: 120 },
     {
       key: 'actions',
       title: 'Actions',

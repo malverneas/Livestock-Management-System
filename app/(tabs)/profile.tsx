@@ -3,6 +3,7 @@ import { View, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-nat
 import { Settings, LogOut, HelpCircle, Bell, User } from 'lucide-react-native';
 import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { useAuth } from '../../contexts/AuthContext';
 import Colors from '../../constants/Colors';
 import { Stack, router } from 'expo-router';
 
@@ -20,6 +21,8 @@ export default function ProfileScreen() {
 }
 
 function ProfileContent() {
+  const { user, signOut } = useAuth();
+  
   const menuItems = [
     {
       id: 'settings',
@@ -44,6 +47,7 @@ function ProfileContent() {
       title: 'Log Out',
       icon: <LogOut size={24} color={Colors.error[500]} />,
       textColor: Colors.error[500],
+      onPress: signOut,
     },
   ];
 
@@ -57,7 +61,7 @@ function ProfileContent() {
             </View>
             <View style={styles.nameContainer}>
               <Text variant="h4" weight="bold">
-                John Farmer
+                {user?.user_metadata?.name || 'User'}
               </Text>
               <Text variant="body" color="neutral.500">
                 Farm Owner
@@ -90,7 +94,13 @@ function ProfileContent() {
             <TouchableOpacity
               key={item.id}
               style={styles.menuItem}
-              onPress={() => item.route && router.push(item.route as any)}
+              onPress={() => {
+                if (item.onPress) {
+                  item.onPress();
+                } else if (item.route) {
+                  router.push(item.route as any);
+                }
+              }}
             >
               {item.icon}
               <Text

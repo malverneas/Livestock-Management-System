@@ -8,14 +8,12 @@ import Colors from '../../../constants/Colors';
 
 interface DrugRecord {
   id: string;
-  drugName: string;
-  batchNumber: string;
-  expiryDate: string;
+  drug_name: string;
+  expiry_date: string;
   quantity: string;
-  supplier: string;
-  dateReceived: string;
-  cost: string;
-  withdrawalPeriod: string;
+  date_received: string;
+  unit_cost: string;
+  withdrawal_period: string;
 }
 
 interface DrugRegisterModalProps {
@@ -27,38 +25,32 @@ interface DrugRegisterModalProps {
 
 export function DrugRegisterModal({ visible, onClose, onSave, editRecord }: DrugRegisterModalProps) {
   const [formData, setFormData] = useState({
-    drugName: '',
-    batchNumber: '',
-    expiryDate: '',
+    drug_name: '',
+    expiry_date: '',
     quantity: '',
-    supplier: '',
-    dateReceived: '',
-    cost: '',
-    withdrawalPeriod: '',
+    date_received: '',
+    unit_cost: '',
+    withdrawal_period: '',
   });
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        drugName: editRecord.drugName,
-        batchNumber: editRecord.batchNumber,
-        expiryDate: editRecord.expiryDate,
+        drug_name: editRecord.drug_name,
+        expiry_date: editRecord.expiry_date,
         quantity: editRecord.quantity,
-        supplier: editRecord.supplier,
-        dateReceived: editRecord.dateReceived,
-        cost: editRecord.cost,
-        withdrawalPeriod: editRecord.withdrawalPeriod,
+        date_received: editRecord.date_received,
+        unit_cost: editRecord.unit_cost,
+        withdrawal_period: editRecord.withdrawal_period,
       });
     } else {
       setFormData({
-        drugName: '',
-        batchNumber: '',
-        expiryDate: '',
+        drug_name: '',
+        expiry_date: '',
         quantity: '',
-        supplier: '',
-        dateReceived: '',
-        cost: '',
-        withdrawalPeriod: '',
+        date_received: '',
+        unit_cost: '',
+        withdrawal_period: '',
       });
     }
   }, [editRecord, visible]);
@@ -83,22 +75,15 @@ export function DrugRegisterModal({ visible, onClose, onSave, editRecord }: Drug
         <ScrollView style={styles.content}>
           <TextField
             label="Drug Name"
-            value={formData.drugName}
-            onChangeText={(text) => setFormData({ ...formData, drugName: text })}
+            value={formData.drug_name}
+            onChangeText={(text) => setFormData({ ...formData, drug_name: text })}
             placeholder="Enter drug name"
           />
 
           <TextField
-            label="Batch Number"
-            value={formData.batchNumber}
-            onChangeText={(text) => setFormData({ ...formData, batchNumber: text })}
-            placeholder="Enter batch number"
-          />
-
-          <TextField
             label="Expiry Date"
-            value={formData.expiryDate}
-            onChangeText={(text) => setFormData({ ...formData, expiryDate: text })}
+            value={formData.expiry_date}
+            onChangeText={(text) => setFormData({ ...formData, expiry_date: text })}
             placeholder="YYYY-MM-DD"
           />
 
@@ -110,31 +95,24 @@ export function DrugRegisterModal({ visible, onClose, onSave, editRecord }: Drug
           />
 
           <TextField
-            label="Supplier"
-            value={formData.supplier}
-            onChangeText={(text) => setFormData({ ...formData, supplier: text })}
-            placeholder="Enter supplier name"
-          />
-
-          <TextField
             label="Date Received"
-            value={formData.dateReceived}
-            onChangeText={(text) => setFormData({ ...formData, dateReceived: text })}
+            value={formData.date_received}
+            onChangeText={(text) => setFormData({ ...formData, date_received: text })}
             placeholder="YYYY-MM-DD"
           />
 
           <TextField
-            label="Cost"
-            value={formData.cost}
-            onChangeText={(text) => setFormData({ ...formData, cost: text })}
-            placeholder="Enter cost"
+            label="Unit Cost ($)"
+            value={formData.unit_cost}
+            onChangeText={(text) => setFormData({ ...formData, unit_cost: text })}
+            placeholder="Enter unit cost"
             keyboardType="numeric"
           />
 
           <TextField
             label="Withdrawal Period (days)"
-            value={formData.withdrawalPeriod}
-            onChangeText={(text) => setFormData({ ...formData, withdrawalPeriod: text })}
+            value={formData.withdrawal_period}
+            onChangeText={(text) => setFormData({ ...formData, withdrawal_period: text })}
             placeholder="Enter withdrawal period"
             keyboardType="numeric"
           />

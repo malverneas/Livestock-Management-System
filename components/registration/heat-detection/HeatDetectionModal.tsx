@@ -6,16 +6,26 @@ import { Picker } from '../../inputs/Picker';
 import { Button } from '../../ui/Button';
 import { X } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
+import { useHerd } from '../../../contexts/HerdContext';
 
 interface HeatDetectionRecord {
   id: string;
-  animalTag: string;
-  heatDate: string;
+  tag: string;
+  stock_type: string;
+  body_condition_score: number;
+  heat_detection_date: string;
   observer: string;
-  intensity: string;
-  breedingDate: string;
-  bullUsed: string;
-  notes: string;
+  serviced_date: string;
+  breeding_status: string;
+  breeding_method: string;
+  ai_technician: string;
+  sire_id_straw_id: string;
+  semen_viability: string;
+  return_to_heat_date_1: string;
+  date_served: string;
+  breeding_method_2: string;
+  sire_used: string;
+  return_to_heat_date_2: string;
 }
 
 interface HeatDetectionModalProps {
@@ -25,43 +35,99 @@ interface HeatDetectionModalProps {
   editRecord?: HeatDetectionRecord | null;
 }
 
-const intensityOptions = [
-  { label: 'Weak', value: 'weak' },
-  { label: 'Moderate', value: 'moderate' },
-  { label: 'Strong', value: 'strong' },
+const stockTypeOptions = [
+  { label: 'Heifer', value: 'heifer' },
+  { label: 'Cow', value: 'cow' },
+  { label: 'Bull', value: 'bull' },
+];
+
+const breedingStatusOptions = [
+  { label: 'Served', value: 'served' },
+  { label: 'Not Served', value: 'not_served' },
+  { label: 'Pregnant', value: 'pregnant' },
+  { label: 'Open', value: 'open' },
+];
+
+const breedingMethodOptions = [
+  { label: 'Natural Service', value: 'natural_service' },
+  { label: 'Artificial Insemination', value: 'artificial_insemination' },
 ];
 
 export function HeatDetectionModal({ visible, onClose, onSave, editRecord }: HeatDetectionModalProps) {
+  const { herdData } = useHerd();
   const [formData, setFormData] = useState({
-    animalTag: '',
-    heatDate: '',
+    tag: '',
+    stock_type: '',
+    body_condition_score: 0,
+    heat_detection_date: '',
     observer: '',
-    intensity: '',
-    breedingDate: '',
-    bullUsed: '',
-    notes: '',
+    serviced_date: '',
+    breeding_status: '',
+    breeding_method: '',
+    ai_technician: '',
+    sire_id_straw_id: '',
+    semen_viability: '',
+    return_to_heat_date_1: '',
+    date_served: '',
+    breeding_method_2: '',
+    sire_used: '',
+    return_to_heat_date_2: '',
   });
+
+  // Filter for female animals only
+  const femaleAnimalOptions = herdData
+    .filter(animal => animal.sex === 'female')
+    .map(animal => ({
+      label: `${animal.tag_number} (${animal.breed}, ${animal.age} years)`,
+      value: animal.tag_number,
+    }));
+
+  // Filter for male animals (bulls/sires)
+  const maleAnimalOptions = herdData
+    .filter(animal => animal.sex === 'male')
+    .map(animal => ({
+      label: `${animal.tag_number} (${animal.breed}, ${animal.age} years)`,
+      value: animal.tag_number,
+    }));
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        animalTag: editRecord.animalTag,
-        heatDate: editRecord.heatDate,
+        tag: editRecord.tag,
+        stock_type: editRecord.stock_type,
+        body_condition_score: editRecord.body_condition_score,
+        heat_detection_date: editRecord.heat_detection_date,
         observer: editRecord.observer,
-        intensity: editRecord.intensity,
-        breedingDate: editRecord.breedingDate,
-        bullUsed: editRecord.bullUsed,
-        notes: editRecord.notes,
+        serviced_date: editRecord.serviced_date,
+        breeding_status: editRecord.breeding_status,
+        breeding_method: editRecord.breeding_method,
+        ai_technician: editRecord.ai_technician,
+        sire_id_straw_id: editRecord.sire_id_straw_id,
+        semen_viability: editRecord.semen_viability,
+        return_to_heat_date_1: editRecord.return_to_heat_date_1,
+        date_served: editRecord.date_served,
+        breeding_method_2: editRecord.breeding_method_2,
+        sire_used: editRecord.sire_used,
+        return_to_heat_date_2: editRecord.return_to_heat_date_2,
       });
     } else {
       setFormData({
-        animalTag: '',
-        heatDate: '',
+        tag: '',
+        stock_type: '',
+        body_condition_score: 0,
+        heat_detection_date: '',
         observer: '',
-        intensity: '',
-        breedingDate: '',
-        bullUsed: '',
-        notes: '',
+        serviced_date: '',
+        breeding_status: '',
+        breeding_method: '',
+        ai_technician: '',
+        sire_id_straw_id: '',
+        semen_viability: '',
+        return_to_heat_date_1: '',
+        date_served: '',
+        breeding_method_2: '',
+        sire_used: '',
+        return_to_heat_date_2: '',
       });
     }
   }, [editRecord, visible]);
@@ -84,17 +150,32 @@ export function HeatDetectionModal({ visible, onClose, onSave, editRecord }: Hea
         </View>
 
         <ScrollView style={styles.content}>
-          <TextField
+          <Picker
             label="Animal Tag"
-            value={formData.animalTag}
-            onChangeText={(text) => setFormData({ ...formData, animalTag: text })}
-            placeholder="Enter animal tag number"
+            value={formData.tag}
+            onValueChange={(value) => setFormData({ ...formData, tag: value })}
+            items={femaleAnimalOptions}
+          />
+
+          <Picker
+            label="Stock Type"
+            value={formData.stock_type}
+            onValueChange={(value) => setFormData({ ...formData, stock_type: value })}
+            items={stockTypeOptions}
           />
 
           <TextField
-            label="Heat Date"
-            value={formData.heatDate}
-            onChangeText={(text) => setFormData({ ...formData, heatDate: text })}
+            label="Body Condition Score"
+            value={formData.body_condition_score.toString()}
+            onChangeText={(text) => setFormData({ ...formData, body_condition_score: parseFloat(text) || 0 })}
+            placeholder="Enter BCS (1-5)"
+            keyboardType="numeric"
+          />
+
+          <TextField
+            label="Heat Detection Date"
+            value={formData.heat_detection_date}
+            onChangeText={(text) => setFormData({ ...formData, heat_detection_date: text })}
             placeholder="YYYY-MM-DD"
           />
 
@@ -105,34 +186,83 @@ export function HeatDetectionModal({ visible, onClose, onSave, editRecord }: Hea
             placeholder="Enter observer name"
           />
 
+          <TextField
+            label="Serviced Date"
+            value={formData.serviced_date}
+            onChangeText={(text) => setFormData({ ...formData, serviced_date: text })}
+            placeholder="YYYY-MM-DD"
+          />
+
           <Picker
-            label="Heat Intensity"
-            value={formData.intensity}
-            onValueChange={(value) => setFormData({ ...formData, intensity: value })}
-            items={intensityOptions}
+            label="Breeding Status"
+            value={formData.breeding_status}
+            onValueChange={(value) => setFormData({ ...formData, breeding_status: value })}
+            items={breedingStatusOptions}
+          />
+
+          <Picker
+            label="Breeding Method"
+            value={formData.breeding_method}
+            onValueChange={(value) => setFormData({ ...formData, breeding_method: value })}
+            items={breedingMethodOptions}
+          />
+
+          {formData.breeding_method === 'artificial_insemination' && (
+            <TextField
+              label="AI Technician"
+              value={formData.ai_technician}
+              onChangeText={(text) => setFormData({ ...formData, ai_technician: text })}
+              placeholder="Enter AI technician name"
+            />
+          )}
+
+          <TextField
+            label="Sire ID/Straw ID"
+            value={formData.sire_id_straw_id}
+            onChangeText={(text) => setFormData({ ...formData, sire_id_straw_id: text })}
+            placeholder="Enter sire or straw ID"
           />
 
           <TextField
-            label="Breeding Date"
-            value={formData.breedingDate}
-            onChangeText={(text) => setFormData({ ...formData, breedingDate: text })}
+            label="Semen Viability"
+            value={formData.semen_viability}
+            onChangeText={(text) => setFormData({ ...formData, semen_viability: text })}
+            placeholder="Enter semen viability"
+          />
+
+          <TextField
+            label="Return to Heat Date 1"
+            value={formData.return_to_heat_date_1}
+            onChangeText={(text) => setFormData({ ...formData, return_to_heat_date_1: text })}
             placeholder="YYYY-MM-DD"
           />
 
           <TextField
-            label="Bull Used"
-            value={formData.bullUsed}
-            onChangeText={(text) => setFormData({ ...formData, bullUsed: text })}
-            placeholder="Enter bull tag number"
+            label="Date Served"
+            value={formData.date_served}
+            onChangeText={(text) => setFormData({ ...formData, date_served: text })}
+            placeholder="YYYY-MM-DD"
+          />
+
+          <Picker
+            label="Breeding Method 2"
+            value={formData.breeding_method_2}
+            onValueChange={(value) => setFormData({ ...formData, breeding_method_2: value })}
+            items={breedingMethodOptions}
+          />
+
+          <Picker
+            label="Sire Used"
+            value={formData.sire_used}
+            onValueChange={(value) => setFormData({ ...formData, sire_used: value })}
+            items={maleAnimalOptions}
           />
 
           <TextField
-            label="Notes"
-            value={formData.notes}
-            onChangeText={(text) => setFormData({ ...formData, notes: text })}
-            placeholder="Enter additional notes"
-            multiline
-            numberOfLines={3}
+            label="Return to Heat Date 2"
+            value={formData.return_to_heat_date_2}
+            onChangeText={(text) => setFormData({ ...formData, return_to_heat_date_2: text })}
+            placeholder="YYYY-MM-DD"
           />
         </ScrollView>
 

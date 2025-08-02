@@ -6,20 +6,19 @@ import { Picker } from '../../inputs/Picker';
 import { Button } from '../../ui/Button';
 import { X } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
+import { useHerd } from '../../../contexts/HerdContext';
 
 interface HealthRecord {
   id: string;
-  animalTag: string;
-  treatmentDate: string;
-  treatmentType: string;
+  date: string;
+  event_type: string;
+  event: string;
+  tag: string;
   diagnosis: string;
   treatment: string;
-  veterinarian: string;
-  drugUsed: string;
-  dosage: string;
-  withdrawalPeriod: string;
-  followUpDate: string;
-  notes: string;
+  drug_administering: string;
+  special_notes: string;
+  done_by: string;
 }
 
 interface HealthRecordModalProps {
@@ -29,59 +28,54 @@ interface HealthRecordModalProps {
   editRecord?: HealthRecord | null;
 }
 
-const treatmentTypeOptions = [
-  { label: 'Vaccination', value: 'vaccination' },
-  { label: 'Deworming', value: 'deworming' },
-  { label: 'Antibiotic Treatment', value: 'antibiotic' },
-  { label: 'Injury Treatment', value: 'injury' },
-  { label: 'Preventive Care', value: 'preventive' },
-  { label: 'Emergency Treatment', value: 'emergency' },
-  { label: 'Routine Check-up', value: 'checkup' },
+const eventTypeOptions = [
+  { label: 'Mass', value: 'mass' },
+  { label: 'Individual', value: 'individual' },
 ];
 
 export function HealthRecordModal({ visible, onClose, onSave, editRecord }: HealthRecordModalProps) {
+  const { herdData } = useHerd();
   const [formData, setFormData] = useState({
-    animalTag: '',
-    treatmentDate: '',
-    treatmentType: '',
+    date: '',
+    event_type: '',
+    event: '',
+    tag: '',
     diagnosis: '',
     treatment: '',
-    veterinarian: '',
-    drugUsed: '',
-    dosage: '',
-    withdrawalPeriod: '',
-    followUpDate: '',
-    notes: '',
+    drug_administering: '',
+    special_notes: '',
+    done_by: '',
   });
+
+  const animalOptions = herdData.map(animal => ({
+    label: `${animal.tag_number} (${animal.breed}, ${animal.sex})`,
+    value: animal.tag_number,
+  }));
 
   useEffect(() => {
     if (editRecord) {
       setFormData({
-        animalTag: editRecord.animalTag,
-        treatmentDate: editRecord.treatmentDate,
-        treatmentType: editRecord.treatmentType,
+        date: editRecord.date,
+        event_type: editRecord.event_type,
+        event: editRecord.event,
+        tag: editRecord.tag,
         diagnosis: editRecord.diagnosis,
         treatment: editRecord.treatment,
-        veterinarian: editRecord.veterinarian,
-        drugUsed: editRecord.drugUsed,
-        dosage: editRecord.dosage,
-        withdrawalPeriod: editRecord.withdrawalPeriod,
-        followUpDate: editRecord.followUpDate,
-        notes: editRecord.notes,
+        drug_administering: editRecord.drug_administering,
+        special_notes: editRecord.special_notes,
+        done_by: editRecord.done_by,
       });
     } else {
       setFormData({
-        animalTag: '',
-        treatmentDate: '',
-        treatmentType: '',
+        date: '',
+        event_type: '',
+        event: '',
+        tag: '',
         diagnosis: '',
         treatment: '',
-        veterinarian: '',
-        drugUsed: '',
-        dosage: '',
-        withdrawalPeriod: '',
-        followUpDate: '',
-        notes: '',
+        drug_administering: '',
+        special_notes: '',
+        done_by: '',
       });
     }
   }, [editRecord, visible]);
@@ -105,25 +99,34 @@ export function HealthRecordModal({ visible, onClose, onSave, editRecord }: Heal
 
         <ScrollView style={styles.content}>
           <TextField
-            label="Animal Tag"
-            value={formData.animalTag}
-            onChangeText={(text) => setFormData({ ...formData, animalTag: text })}
-            placeholder="Enter animal tag number"
-          />
-
-          <TextField
-            label="Treatment Date"
-            value={formData.treatmentDate}
-            onChangeText={(text) => setFormData({ ...formData, treatmentDate: text })}
+            label="Date"
+            value={formData.date}
+            onChangeText={(text) => setFormData({ ...formData, date: text })}
             placeholder="YYYY-MM-DD"
           />
 
           <Picker
-            label="Treatment Type"
-            value={formData.treatmentType}
-            onValueChange={(value) => setFormData({ ...formData, treatmentType: value })}
-            items={treatmentTypeOptions}
+            label="Event Type"
+            value={formData.event_type}
+            onValueChange={(value) => setFormData({ ...formData, event_type: value })}
+            items={eventTypeOptions}
           />
+
+          <TextField
+            label="Event"
+            value={formData.event}
+            onChangeText={(text) => setFormData({ ...formData, event: text })}
+            placeholder="Enter event description"
+          />
+
+          {formData.event_type === 'individual' && (
+            <Picker
+              label="Animal Tag"
+              value={formData.tag}
+              onValueChange={(value) => setFormData({ ...formData, tag: value })}
+              items={animalOptions}
+            />
+          )}
 
           <TextField
             label="Diagnosis"
@@ -136,52 +139,30 @@ export function HealthRecordModal({ visible, onClose, onSave, editRecord }: Heal
             label="Treatment"
             value={formData.treatment}
             onChangeText={(text) => setFormData({ ...formData, treatment: text })}
-            placeholder="Enter treatment given"
+            placeholder="Enter treatment"
           />
 
           <TextField
-            label="Veterinarian"
-            value={formData.veterinarian}
-            onChangeText={(text) => setFormData({ ...formData, veterinarian: text })}
-            placeholder="Enter veterinarian name"
+            label="Drug Administering"
+            value={formData.drug_administering}
+            onChangeText={(text) => setFormData({ ...formData, drug_administering: text })}
+            placeholder="Enter drug administered"
           />
 
           <TextField
-            label="Drug Used"
-            value={formData.drugUsed}
-            onChangeText={(text) => setFormData({ ...formData, drugUsed: text })}
-            placeholder="Enter drug name"
-          />
-
-          <TextField
-            label="Dosage"
-            value={formData.dosage}
-            onChangeText={(text) => setFormData({ ...formData, dosage: text })}
-            placeholder="Enter dosage"
-          />
-
-          <TextField
-            label="Withdrawal Period (days)"
-            value={formData.withdrawalPeriod}
-            onChangeText={(text) => setFormData({ ...formData, withdrawalPeriod: text })}
-            placeholder="Enter withdrawal period"
-            keyboardType="numeric"
-          />
-
-          <TextField
-            label="Follow Up Date"
-            value={formData.followUpDate}
-            onChangeText={(text) => setFormData({ ...formData, followUpDate: text })}
-            placeholder="YYYY-MM-DD"
-          />
-
-          <TextField
-            label="Notes"
-            value={formData.notes}
-            onChangeText={(text) => setFormData({ ...formData, notes: text })}
-            placeholder="Enter additional notes"
+            label="Special Notes"
+            value={formData.special_notes}
+            onChangeText={(text) => setFormData({ ...formData, special_notes: text })}
+            placeholder="Enter special notes"
             multiline
             numberOfLines={3}
+          />
+
+          <TextField
+            label="Done By"
+            value={formData.done_by}
+            onChangeText={(text) => setFormData({ ...formData, done_by: text })}
+            placeholder="Enter person responsible"
           />
         </ScrollView>
 

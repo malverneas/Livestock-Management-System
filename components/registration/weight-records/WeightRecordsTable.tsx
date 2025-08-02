@@ -7,32 +7,39 @@ import { Button } from '../../ui/Button';
 import { Plus, CreditCard as Edit, Trash2 } from 'lucide-react-native';
 import Colors from '../../../constants/Colors';
 
-interface HerdRecord {
+interface WeightRecord {
   id: string;
-  tag_number: string;
-  breed: string;
-  age: number;
-  sex: string;
+  animal_tag: string;
+  weight_date: string;
+  weight: number;
+  notes: string;
 }
 
-interface HerdRegisterTableProps {
-  data: HerdRecord[];
+interface WeightRecordsTableProps {
+  data: WeightRecord[];
   onAdd: () => void;
-  onEdit: (record: HerdRecord) => void;
+  onEdit: (record: WeightRecord) => void;
   onDelete: (id: string) => void;
 }
 
-export function HerdRegisterTable({ data, onAdd, onEdit, onDelete }: HerdRegisterTableProps) {
+export function WeightRecordsTable({ data, onAdd, onEdit, onDelete }: WeightRecordsTableProps) {
   const columns = [
-    { key: 'tag_number', title: 'Tag #', width: 100 },
-    { key: 'breed', title: 'Breed', width: 100 },
-    { key: 'age', title: 'Age', width: 80 },
-    { key: 'sex', title: 'Sex', width: 60 },
+    { key: 'animal_tag', title: 'Animal Tag', width: 100 },
+    { key: 'weight_date', title: 'Date', width: 100 },
+    { 
+      key: 'weight', 
+      title: 'Weight (kg)', 
+      width: 100,
+      render: (value: number) => (
+        <Text variant="caption">{value} kg</Text>
+      )
+    },
+    { key: 'notes', title: 'Notes', width: 150 },
     {
       key: 'actions',
       title: 'Actions',
       width: 120,
-      render: (value: any, record: HerdRecord) => (
+      render: (value: any, record: WeightRecord) => (
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -55,7 +62,7 @@ export function HerdRegisterTable({ data, onAdd, onEdit, onDelete }: HerdRegiste
     <Card style={styles.container}>
       <View style={styles.header}>
         <Text variant="h6" weight="medium">
-          Herd Register
+          Weight Records
         </Text>
         <Button
           variant="primary"
@@ -63,7 +70,7 @@ export function HerdRegisterTable({ data, onAdd, onEdit, onDelete }: HerdRegiste
           startIcon={<Plus size={16} color={Colors.white} />}
           onPress={onAdd}
         >
-          Add Animal
+          Add Weight
         </Button>
       </View>
       <DataTable columns={columns} data={data} />

@@ -9,14 +9,12 @@ import Colors from '../../../constants/Colors';
 
 interface CalfRecord {
   id: string;
-  tagNumber: string;
-  dateOfBirth: string;
+  tag_number: string;
+  age: number;
   sex: string;
-  dam: string;
-  sire: string;
-  birthWeight: string;
-  weaningWeight: string;
-  weaningDate: string;
+  birth_weight: number;
+  weaning_weight: number;
+  weaning_date: string;
 }
 
 interface CalfRegisterTableProps {
@@ -28,14 +26,12 @@ interface CalfRegisterTableProps {
 
 export function CalfRegisterTable({ data, onAdd, onEdit, onDelete }: CalfRegisterTableProps) {
   const columns = [
-    { key: 'tagNumber', title: 'Tag #', width: 80 },
-    { key: 'dateOfBirth', title: 'DOB', width: 100 },
+    { key: 'tag_number', title: 'Tag #', width: 100 },
+    { key: 'age', title: 'Age', width: 80 },
     { key: 'sex', title: 'Sex', width: 60 },
-    { key: 'dam', title: 'Dam', width: 80 },
-    { key: 'sire', title: 'Sire', width: 80 },
-    { key: 'birthWeight', title: 'Birth Wt', width: 80 },
-    { key: 'weaningWeight', title: 'Wean Wt', width: 80 },
-    { key: 'weaningDate', title: 'Wean Date', width: 100 },
+    { key: 'birth_weight', title: 'Birth Wt', width: 100 },
+    { key: 'weaning_weight', title: 'Wean Wt', width: 100 },
+    { key: 'weaning_date', title: 'Wean Date', width: 120 },
     {
       key: 'actions',
       title: 'Actions',
