@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { Settings, LogOut, HelpCircle, Bell, User } from 'lucide-react-native';
+import { Settings, LogOut, CircleHelp as HelpCircle, Bell, User } from 'lucide-react-native';
 import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useAuth } from '../../contexts/AuthContext';

@@ -4,7 +4,7 @@ import { BarChart } from 'react-native-chart-kit';
 import { Redirect } from 'expo-router';
 
 import { router } from 'expo-router';
-import { Bell, Heart, Dna, Wheat, BarChart3, ClipboardList, FileEdit, ShoppingCart, Settings, User, TrendingUp } from 'lucide-react-native';
+import { Bell, Heart, Dna, Wheat, ChartBar as BarChart3, ClipboardList, File as FileEdit, ShoppingCart, Settings, User, TrendingUp } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '../../components/typography/Text';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
