@@ -4,9 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from '../contexts/AuthContext';
 import { HerdProvider } from '../contexts/HerdContext';
 import { CalfProvider } from '../contexts/CalfContext';
-import Colors from '../constants/Colors';
+import Colors from '../constants/Colors'
+import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 export default function RootLayout() {
+  useFrameworkReady();
   const androidStatusBarHeight = RNStatusBar.currentHeight || 0;
 
   // Set Android status bar color
