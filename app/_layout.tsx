@@ -23,7 +23,7 @@ export default function RootLayout() {
     <AuthProvider>
       <HerdProvider>
         <CalfProvider>
-          <WeightRecordsProvider>
+        
             <Stack
               screenOptions={{
                 headerTitleStyle: {
@@ -65,7 +65,7 @@ export default function RootLayout() {
               <Stack.Screen name="+not-found" options={{ presentation: 'modal' }} />
             </Stack>
             <StatusBar style="dark" />
-          </WeightRecordsProvider>
+
         </CalfProvider>
       </HerdProvider>
     </AuthProvider>
