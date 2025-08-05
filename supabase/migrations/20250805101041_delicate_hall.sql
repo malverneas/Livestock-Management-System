@@ -21,13 +21,13 @@
 CREATE TABLE IF NOT EXISTS herd_register (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
-  tag_number text NOT NULL,
+  tag text NOT NULL,
   breed text NOT NULL,
   age integer NOT NULL,
-  sex text NOT NULL CHECK (sex IN ('male', 'female')),
+  sex text NOT NULL CHECK (sex IN ('Male', 'Female')),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
-  UNIQUE(user_id, tag_number)
+  UNIQUE(user_id, tag)
 );
 
 -- Calf Register Table
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS calf_register (
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   tag_number text NOT NULL,
   age integer NOT NULL,
-  sex text NOT NULL CHECK (sex IN ('male', 'female')),
+  sex text NOT NULL CHECK (sex IN ('Male', 'Female')),
   birth_weight decimal(5,2),
   weaning_weight decimal(5,2),
   weaning_date date,
@@ -249,7 +249,7 @@ CREATE POLICY "Users can manage their own heat detection records"
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_herd_register_user_id ON herd_register(user_id);
-CREATE INDEX IF NOT EXISTS idx_herd_register_tag_number ON herd_register(tag_number);
+CREATE INDEX IF NOT EXISTS idx_herd_register_tag ON herd_register(tag);
 CREATE INDEX IF NOT EXISTS idx_calf_register_user_id ON calf_register(user_id);
 CREATE INDEX IF NOT EXISTS idx_drug_register_user_id ON drug_register(user_id);
 CREATE INDEX IF NOT EXISTS idx_pregnancy_register_user_id ON pregnancy_register(user_id);

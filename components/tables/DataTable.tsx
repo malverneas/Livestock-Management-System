@@ -17,7 +17,7 @@ interface DataTableProps {
   emptyText?: string;
 }
 
-export function DataTable({ columns, data, emptyText = 'No data available' }: DataTableProps) {
+export function DataTable({ columns, data = [], emptyText = 'No data available' }: DataTableProps) {
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
